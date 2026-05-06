@@ -1,0 +1,108 @@
+{
+  "name": "Item",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Title of the lost/found item"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the item"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "lost",
+        "found"
+      ],
+      "description": "Whether item is lost or found"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "electronics",
+        "wallet_cards",
+        "keys",
+        "bags",
+        "clothing",
+        "jewelry",
+        "documents",
+        "pets",
+        "others"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "matched",
+        "resolved",
+        "expired"
+      ],
+      "default": "active"
+    },
+    "image_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "location_name": {
+      "type": "string"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "date_lost_found": {
+      "type": "string",
+      "format": "date"
+    },
+    "contact_name": {
+      "type": "string"
+    },
+    "contact_email": {
+      "type": "string"
+    },
+    "matched_item_id": {
+      "type": "string"
+    },
+    "verification_question": {
+      "type": "string"
+    },
+    "verification_answer": {
+      "type": "string"
+    },
+    "claim_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "pending",
+        "verified",
+        "rejected"
+      ],
+      "default": "none"
+    },
+    "claimant_email": {
+      "type": "string"
+    },
+    "repost_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of times this post has been reposted"
+    },
+    "last_reposted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the post was last reposted/bumped"
+    }
+  },
+  "required": [
+    "title",
+    "type",
+    "category"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "name": "Conversation",
+  "type": "object",
+  "properties": {
+    "item_id": {
+      "type": "string",
+      "description": "Related item ID"
+    },
+    "item_title": {
+      "type": "string",
+      "description": "Title of the related item"
+    },
+    "participants": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Email addresses of participants"
+    },
+    "last_message": {
+      "type": "string",
+      "description": "Preview of the last message"
+    },
+    "last_message_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of last message"
+    },
+    "unread_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Users who have unread messages"
+    }
+  },
+  "required": [
+    "item_id",
+    "participants"
+  ]
+}

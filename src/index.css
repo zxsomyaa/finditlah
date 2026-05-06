@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-heading: 'Plus Jakarta Sans', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+
+    /* Light mode — warm neutral */
+    --background: 220 18% 97%;
+    --foreground: 222 20% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 20% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 20% 12%;
+    --primary: 222 47% 52%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 16% 93%;
+    --secondary-foreground: 222 20% 25%;
+    --muted: 220 14% 94%;
+    --muted-foreground: 220 12% 48%;
+    --accent: 162 55% 42%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 14% 89%;
+    --input: 220 14% 89%;
+    --ring: 222 47% 52%;
+    --chart-1: 222 47% 52%;
+    --chart-2: 162 55% 42%;
+    --chart-3: 220 20% 60%;
+    --chart-4: 43 74% 60%;
+    --chart-5: 280 55% 58%;
+    --radius: 1rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 222 47% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 94%;
+    --sidebar-accent-foreground: 222 20% 25%;
+    --sidebar-border: 220 14% 89%;
+    --sidebar-ring: 222 47% 52%;
+  }
+
+  .dark {
+    /* Dark mode — deep layered navy */
+    --background: 222 25% 7%;
+    --foreground: 218 20% 90%;
+    --card: 222 22% 11%;
+    --card-foreground: 218 20% 90%;
+    --popover: 222 22% 11%;
+    --popover-foreground: 218 20% 90%;
+    --primary: 222 68% 62%;
+    --primary-foreground: 222 30% 8%;
+    --secondary: 222 20% 15%;
+    --secondary-foreground: 218 18% 78%;
+    --muted: 222 20% 14%;
+    --muted-foreground: 218 16% 48%;
+    --accent: 162 52% 46%;
+    --accent-foreground: 162 40% 8%;
+    --destructive: 0 58% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 222 18% 17%;
+    --input: 222 18% 17%;
+    --ring: 222 68% 62%;
+    --chart-1: 222 70% 65%;
+    --chart-2: 162 55% 48%;
+    --chart-3: 220 20% 60%;
+    --chart-4: 43 74% 62%;
+    --chart-5: 280 55% 62%;
+    --sidebar-background: 224 22% 9%;
+    --sidebar-foreground: 220 18% 92%;
+    --sidebar-primary: 222 70% 65%;
+    --sidebar-primary-foreground: 222 30% 10%;
+    --sidebar-accent: 224 18% 18%;
+    --sidebar-accent-foreground: 220 16% 82%;
+    --sidebar-border: 224 16% 20%;
+    --sidebar-ring: 222 70% 65%;
+  }
+}
+
+@layer base {
+  /* Prevent accidental text selection on all interactive elements */
+  button,
+  a,
+  [role="button"],
+  nav,
+  label {
+    @apply select-none;
+  }
+
+  :root {
+    --safe-area-inset-top: env(safe-area-inset-top, 0px);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-inset-left: env(safe-area-inset-left, 0px);
+    --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body;
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.pt-safe {
+  padding-top: max(1rem, env(safe-area-inset-top));
+}
+
+.pb-safe {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
