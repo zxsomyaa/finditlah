@@ -9,6 +9,13 @@ import {
   MessageCircle,
   CheckCircle2,
   Eye,
+  Plus,
+  MapPin,
+  Tag,
+  CalendarDays,
+  Loader2,
+  PackageSearch,
+  ImageOff,
 } from "lucide-react";
 
 const categories = [
@@ -40,7 +47,7 @@ const categories = [
 export default function Home() {
   const [typeFilter, setTypeFilter] = useState("lost");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(/** @type {any} */ (null));
 
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -62,6 +69,7 @@ export default function Home() {
     queryFn: () => db.entities.Item.list({ onlyActive: true }),
   });
 
+  /** @param {string} itemId */
   const handleDelete = async (itemId) => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
 
@@ -70,10 +78,11 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ["items"] });
     } catch (err) {
       console.error(err);
-      alert(err.message || "Failed to delete post");
+      alert((err instanceof Error && err.message) || "Failed to delete post");
     }
   };
 
+  /** @param {string} itemId */
   const handleMarkResolved = async (itemId) => {
     if (
       !window.confirm(
@@ -91,10 +100,11 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ["my-items"] });
     } catch (err) {
       console.error(err);
-      alert(err.message || "Failed to update status");
+      alert((err instanceof Error && err.message) || "Failed to update status");
     }
   };
 
+  /** @param {any} item */
   const handleStartChat = async (item) => {
     const {
       data: { user },
@@ -152,14 +162,15 @@ export default function Home() {
       navigate(`/chat/${conversation.id}`);
     } catch (err) {
       console.error(err);
-      alert(err.message || "Failed to start chat");
+      alert((err instanceof Error && err.message) || "Failed to start chat");
     }
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-muted-foreground">
-        Loading posts...
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 text-muted-foreground">
+        <Loader2 className="animate-spin" size={22} />
+        <span className="text-sm">Loading posts...</span>
       </div>
     );
   }
@@ -174,41 +185,44 @@ export default function Home() {
     <div className="min-h-screen bg-background px-4 py-4 pb-28 space-y-4">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-foreground">Home Feed</h1>
-          <p className="text-xs text-muted-foreground">
+          <h1 className="font-heading text-xl font-bold text-foreground">Home Feed</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
             Lost & Found items near you
           </p>
         </div>
 
         <Link
           to="/post"
-          className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium shadow-sm hover:opacity-90 transition"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold shadow-sm hover:bg-primary/90 transition"
         >
-          + Create
+          <Plus size={16} />
+          Create
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2 bg-muted rounded-2xl p-1">
         <button
           onClick={() => setTypeFilter("lost")}
-          className={`py-2 rounded-xl text-sm font-medium border transition ${
+          className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-medium transition ${
             typeFilter === "lost"
-              ? "bg-red-500/10 border-red-200 text-red-600"
-              : "bg-card border-border text-muted-foreground"
+              ? "bg-card text-red-600 shadow-sm"
+              : "text-muted-foreground"
           }`}
         >
-          🔴 Lost
+          <span className="w-2 h-2 rounded-full bg-red-500" />
+          Lost
         </button>
 
         <button
           onClick={() => setTypeFilter("found")}
-          className={`py-2 rounded-xl text-sm font-medium border transition ${
+          className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-medium transition ${
             typeFilter === "found"
-              ? "bg-emerald-500/10 border-emerald-200 text-emerald-600"
-              : "bg-card border-border text-muted-foreground"
+              ? "bg-card text-emerald-600 shadow-sm"
+              : "text-muted-foreground"
           }`}
         >
-          🟢 Found
+          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+          Found
         </button>
       </div>
 
@@ -229,7 +243,8 @@ export default function Home() {
       </div>
 
       {filteredItems.length === 0 ? (
-        <div className="text-center mt-16 text-muted-foreground">
+        <div className="flex flex-col items-center gap-2 text-center mt-16 text-muted-foreground">
+          <PackageSearch size={28} className="opacity-60" />
           <p className="text-sm">No {typeFilter} items found</p>
         </div>
       ) : (
@@ -252,6 +267,9 @@ export default function Home() {
   );
 }
 
+/**
+ * @param {{ item: any, currentUser: any, onView: () => void, onDelete: () => void, onEdit: () => void, onResolved: () => void, onChat: () => void }} props
+ */
 function ItemCard({
   item,
   currentUser,
@@ -266,15 +284,19 @@ function ItemCard({
   return (
     <div
       onClick={onView}
-      className="bg-card border border-border rounded-2xl p-4 shadow-sm hover:shadow-md transition cursor-pointer"
+      className="bg-card border border-border rounded-2xl p-4 shadow-sm hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5 transition cursor-pointer"
     >
       <div className="flex gap-4 items-start">
-        {item.image_url && (
+        {item.image_url ? (
           <img
             src={item.image_url}
             alt={item.title}
-            className="w-24 h-24 object-cover rounded-xl border border-border"
+            className="w-28 h-28 object-cover rounded-xl border border-border shrink-0"
           />
+        ) : (
+          <div className="w-28 h-28 rounded-xl border border-border bg-muted flex items-center justify-center shrink-0">
+            <ImageOff size={22} className="text-muted-foreground/60" />
+          </div>
         )}
 
         <div className="flex-1 min-w-0">
@@ -284,12 +306,13 @@ function ItemCard({
             </h3>
 
             <span
-              className={`text-[10px] px-2 py-1 rounded-full font-medium shrink-0 ${
+              className={`flex items-center gap-1 text-[10px] px-2 py-1 rounded-full font-medium shrink-0 ${
                 item.type === "lost"
                   ? "bg-red-500/10 text-red-600"
                   : "bg-emerald-500/10 text-emerald-600"
               }`}
             >
+              <span className={`w-1.5 h-1.5 rounded-full ${item.type === "lost" ? "bg-red-500" : "bg-emerald-500"}`} />
               {item.type}
             </span>
           </div>
@@ -300,20 +323,23 @@ function ItemCard({
 
           <div className="flex flex-wrap gap-2 mt-3 text-[11px] text-muted-foreground">
             {item.location_name && (
-              <span className="px-2 py-1 bg-muted rounded-full">
-                📍 {item.location_name}
+              <span className="flex items-center gap-1 px-2 py-1 bg-muted rounded-full">
+                <MapPin size={11} />
+                {item.location_name}
               </span>
             )}
 
             {item.category && (
-              <span className="px-2 py-1 bg-muted rounded-full">
-                🏷 {item.category}
+              <span className="flex items-center gap-1 px-2 py-1 bg-muted rounded-full">
+                <Tag size={11} />
+                {item.category}
               </span>
             )}
 
             {item.date && (
-              <span className="px-2 py-1 bg-muted rounded-full">
-                📅 {new Date(item.date).toLocaleDateString()}
+              <span className="flex items-center gap-1 px-2 py-1 bg-muted rounded-full">
+                <CalendarDays size={11} />
+                {new Date(item.date).toLocaleDateString()}
               </span>
             )}
           </div>
@@ -324,7 +350,7 @@ function ItemCard({
                 e.stopPropagation();
                 onView();
               }}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-muted text-foreground text-xs font-medium"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-muted text-foreground text-xs font-medium hover:bg-muted/70 transition"
             >
               <Eye className="w-3.5 h-3.5" />
               View Details
@@ -337,7 +363,7 @@ function ItemCard({
                     e.stopPropagation();
                     onEdit();
                   }}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-muted text-foreground text-xs font-medium"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-muted text-foreground text-xs font-medium hover:bg-muted/70 transition"
                 >
                   <Pencil className="w-3.5 h-3.5" />
                   Edit
@@ -348,7 +374,7 @@ function ItemCard({
                     e.stopPropagation();
                     onDelete();
                   }}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-500/10 text-red-600 text-xs font-medium"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-red-500/10 text-red-600 text-xs font-medium hover:bg-red-500/20 transition"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   Delete
@@ -359,7 +385,7 @@ function ItemCard({
                     e.stopPropagation();
                     onResolved();
                   }}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-500/10 text-green-600 text-xs font-medium"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-green-500/10 text-green-600 text-xs font-medium hover:bg-green-500/20 transition"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   Resolved
@@ -371,7 +397,7 @@ function ItemCard({
                   e.stopPropagation();
                   onChat();
                 }}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition"
               >
                 <MessageCircle className="w-3.5 h-3.5" />
                 Chat
