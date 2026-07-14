@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase-client";
 const CLOUD_NAME = "dlu21nvii";
 const UPLOAD_PRESET = "fxipenex";
 
+/** @param {File} file */
 const uploadToCloudinary = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
@@ -31,11 +32,11 @@ const uploadToCloudinary = async (file) => {
 
 export default function ChatRoom() {
   const { conversationId } = useParams();
-  const bottomRef = useRef(null);
+  const bottomRef = useRef(/** @type {HTMLDivElement | null} */ (null));
 
-  const [user, setUser] = useState(null);
-  const [conversation, setConversation] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const [user, setUser] = useState(/** @type {any} */ (null));
+  const [conversation, setConversation] = useState(/** @type {any} */ (null));
+  const [messages, setMessages] = useState(/** @type {any[]} */ ([]));
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -158,6 +159,7 @@ export default function ChatRoom() {
   };
 
   /* ---------------- IMAGE ---------------- */
+  /** @param {React.ChangeEvent<HTMLInputElement>} e */
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;

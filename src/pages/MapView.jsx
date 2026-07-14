@@ -31,6 +31,7 @@ const foundIcon = new L.DivIcon({
   iconAnchor: [13, 13],
 });
 
+/** @param {string} locationName */
 const geocodeLocation = async (locationName) => {
   if (!locationName) return null;
 

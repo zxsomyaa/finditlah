@@ -188,6 +188,7 @@ export default function AdminDashboard() {
 }
 
 /* CARD */
+/** @param {{ icon: React.ReactNode, label: React.ReactNode, value: React.ReactNode }} props */
 function Card({ icon, label, value }) {
   return (
     <div className="bg-card border rounded-xl p-4">

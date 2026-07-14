@@ -36,6 +36,7 @@ const categories = [
 ];
 
 /* ---------------- UPLOAD FUNCTION ---------------- */
+/** @param {File} file */
 const uploadToCloudinary = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
@@ -75,6 +76,10 @@ export default function PostItem() {
     image_url: "",
   });
 
+  /**
+   * @param {string} key
+   * @param {any} value
+   */
   const handleChange = (key, value) => {
     setForm((prev) => ({
       ...prev,
@@ -82,6 +87,7 @@ export default function PostItem() {
     }));
   };
 
+  /** @param {React.ChangeEvent<HTMLInputElement>} e */
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -96,7 +102,7 @@ export default function PostItem() {
       }));
     } catch (err) {
       console.error(err);
-      alert(err.message || "Image upload failed");
+      alert((err instanceof Error && err.message) || "Image upload failed");
     } finally {
       setUploading(false);
     }
@@ -132,7 +138,7 @@ export default function PostItem() {
       navigate("/");
     } catch (err) {
       console.error(err);
-      alert(err.message || "Failed to create post");
+      alert((err instanceof Error && err.message) || "Failed to create post");
     } finally {
       setSubmitting(false);
     }

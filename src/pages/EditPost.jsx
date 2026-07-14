@@ -68,6 +68,10 @@ export default function EditPost() {
     loadItem();
   }, [id]);
 
+  /**
+   * @param {string} key
+   * @param {any} value
+   */
   const handleChange = (key, value) => {
     setForm((prev) => ({
       ...prev,
@@ -89,7 +93,7 @@ export default function EditPost() {
       navigate("/");
     } catch (err) {
       console.error(err);
-      alert(err.message || "Failed to update post");
+      alert((err instanceof Error && err.message) || "Failed to update post");
     } finally {
       setSaving(false);
     }

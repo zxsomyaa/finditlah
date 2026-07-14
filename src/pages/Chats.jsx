@@ -26,7 +26,7 @@ export default function Chats() {
       const { data, error } = await supabase
         .from("conversations")
         .select("*")
-        .contains("participants", [currentUser.id])
+        .contains("participants", [currentUser?.id])
         .order("last_message_at", { ascending: false });
 
       if (error) throw error;
