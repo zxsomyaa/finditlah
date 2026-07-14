@@ -2,17 +2,21 @@ import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { supabase } from "@/lib/supabase-client"
 import { motion } from "framer-motion"
-import { Mail, Lock, User } from "lucide-react"
+import { Mail, Lock, User, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react"
+import SocialLoginButtons from "@/components/auth/SocialLoginButtons"
+import AuthShowcase from "@/components/auth/AuthShowcase"
 
 export default function Signup() {
   const navigate = useNavigate()
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const [username, setUsername] = useState("")
-  const [error, setError] = useState(null)
+  const [error, setError] = useState(/** @type {string | null} */ (null))
   const [loading, setLoading] = useState(false)
 
+  /** @param {React.FormEvent<HTMLFormElement>} e */
   const handleSignup = async (e) => {
     e.preventDefault()
     setError(null)
@@ -44,44 +48,55 @@ export default function Signup() {
 
       navigate("/login")
     } catch (err) {
-      setError(err.message)
+      setError(err instanceof Error ? err.message : String(err))
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-background flex">
 
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-sm"
-      >
-        <div className="bg-white rounded-3xl shadow-lg p-8 text-center">
+      <div className="relative w-full lg:w-1/2 min-h-screen flex items-center justify-center px-6 sm:px-10 py-12 overflow-hidden">
 
-          {/* Logo */}
-          <img
-            src="/assets/logo.png"
-            alt="logo"
-            className="w-16 mx-auto mb-4"
-          />
+        {/* Decorative background (mobile only — desktop has the showcase panel) */}
+        <div className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 rounded-full bg-primary/15 blur-3xl lg:hidden" />
+        <div className="pointer-events-none absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-accent/15 blur-3xl lg:hidden" />
 
-          {/* Tagline */}
-          <p className="text-gray-700 text-base italic font-medium mb-6 leading-relaxed">
-            Find what matters. Return what counts.
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative z-10 w-full max-w-sm"
+        >
+
+          {/* Brand */}
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <img src="/assets/logo.png" alt="logo" className="w-6 h-6" />
+            </div>
+            <span className="font-heading text-lg font-bold text-foreground">FindItLah</span>
+          </div>
+
+          <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground mb-1.5">
+            Create your account
+          </h1>
+          <p className="text-muted-foreground text-sm mb-8">
+            Join FindItLah to start posting and finding items.
           </p>
 
+          <SocialLoginButtons />
+
           {/* FORM */}
-          <form onSubmit={handleSignup} className="space-y-4 text-left">
+          <form onSubmit={handleSignup} className="space-y-4 text-left mt-5">
 
             {/* Username */}
             <div className="relative">
-              <User className="absolute left-3 top-3.5 text-gray-400" size={18} />
+              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
               <input
                 type="text"
                 placeholder="Username"
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                autoComplete="username"
+                className="w-full pl-11 pr-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
@@ -89,11 +104,12 @@ export default function Signup() {
 
             {/* Email */}
             <div className="relative">
-              <Mail className="absolute left-3 top-3.5 text-gray-400" size={18} />
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
               <input
                 type="email"
                 placeholder="Email"
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                autoComplete="email"
+                className="w-full pl-11 pr-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -101,20 +117,30 @@ export default function Signup() {
 
             {/* Password */}
             <div className="relative">
-              <Lock className="absolute left-3 top-3.5 text-gray-400" size={18} />
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="Password"
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                autoComplete="new-password"
+                className="w-full pl-11 pr-11 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
 
             {/* Error */}
             {error && (
-              <div className="text-red-500 text-sm text-center">
-                {error}
+              <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-xl px-3 py-2.5">
+                <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                <span>{error}</span>
               </div>
             )}
 
@@ -122,22 +148,25 @@ export default function Signup() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-xl font-semibold hover:bg-primary/90 transition disabled:opacity-50"
             >
+              {loading && <Loader2 className="animate-spin" size={18} />}
               {loading ? "Creating account..." : "Sign up"}
             </button>
           </form>
 
           {/* Login link */}
-          <p className="text-center text-sm text-gray-500 mt-6">
+          <p className="text-center text-sm text-muted-foreground mt-8">
             Already have an account?{" "}
-            <Link to="/login" className="text-blue-600 font-semibold">
+            <Link to="/login" className="text-primary font-semibold hover:underline">
               Login
             </Link>
           </p>
 
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
+
+      <AuthShowcase />
     </div>
   )
 }
