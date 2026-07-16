@@ -3,6 +3,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { db } from "@/lib/db";
 import { supabase } from "@/lib/supabase-client";
+import { awardPoints } from "@/lib/rewards";
+import { toast } from "@/components/ui/use-toast";
 import {
   Pencil,
   Trash2,
@@ -98,6 +100,15 @@ export default function Home() {
 
       queryClient.invalidateQueries({ queryKey: ["items"] });
       queryClient.invalidateQueries({ queryKey: ["my-items"] });
+
+      try {
+        const earned = await awardPoints("reunite", itemId);
+        if (earned > 0) {
+          toast({ title: `+${earned} points`, description: "Nice — you reunited someone with their item!" });
+        }
+      } catch (rewardsErr) {
+        console.error(rewardsErr);
+      }
     } catch (err) {
       console.error(err);
       alert((err instanceof Error && err.message) || "Failed to update status");

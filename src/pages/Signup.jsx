@@ -1,13 +1,16 @@
 import { useState } from "react"
-import { useNavigate, Link } from "react-router-dom"
+import { useNavigate, useSearchParams, Link } from "react-router-dom"
 import { supabase } from "@/lib/supabase-client"
 import { motion } from "framer-motion"
-import { Mail, Lock, User, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react"
+import { Mail, Lock, User, Eye, EyeOff, AlertCircle, Loader2, Gift } from "lucide-react"
 import SocialLoginButtons from "@/components/auth/SocialLoginButtons"
 import AuthShowcase from "@/components/auth/AuthShowcase"
+import { redeemReferral } from "@/lib/rewards"
 
 export default function Signup() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const referralCode = searchParams.get("ref")
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -46,6 +49,14 @@ export default function Signup() {
 
       if (profileError) throw profileError
 
+      if (referralCode) {
+        try {
+          await redeemReferral(referralCode)
+        } catch (referralErr) {
+          console.error(referralErr)
+        }
+      }
+
       navigate("/login")
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
@@ -80,9 +91,16 @@ export default function Signup() {
           <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground mb-1.5">
             Create your account
           </h1>
-          <p className="text-muted-foreground text-sm mb-8">
+          <p className="text-muted-foreground text-sm mb-6">
             Join FindItLah to start posting and finding items.
           </p>
+
+          {referralCode && (
+            <div className="flex items-center gap-2 bg-accent/10 border border-accent/20 text-accent text-sm rounded-xl px-3 py-2.5 mb-6">
+              <Gift size={16} className="shrink-0" />
+              <span>You were invited by a friend — sign up and they'll earn reward points!</span>
+            </div>
+          )}
 
           <SocialLoginButtons />
 

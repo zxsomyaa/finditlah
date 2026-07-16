@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { Loader2, ImagePlus } from "lucide-react";
 import { db } from "@/lib/db";
 import { supabase } from "@/lib/supabase-client";
+import { awardPoints } from "@/lib/rewards";
+import { toast } from "@/components/ui/use-toast";
 
 /* ---------------- CLOUDINARY CONFIG ---------------- */
 const CLOUD_NAME = "dlu21nvii";
@@ -127,12 +129,21 @@ export default function PostItem() {
     try {
       setSubmitting(true);
 
-      await db.entities.Item.create({
+      const created = await db.entities.Item.create({
         ...form,
         user_id: user.id,
         created_date: new Date().toISOString(),
         status: "active",
       });
+
+      try {
+        const earned = await awardPoints(form.type === "found" ? "post_found" : "report_lost", created.id);
+        if (earned > 0) {
+          toast({ title: `+${earned} points`, description: "Thanks for helping the community!" });
+        }
+      } catch (rewardsErr) {
+        console.error(rewardsErr);
+      }
 
       queryClient.invalidateQueries({ queryKey: ["items"] });
       navigate("/");

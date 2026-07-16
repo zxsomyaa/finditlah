@@ -2,12 +2,14 @@
 
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabase-client";
+import { getMyRewards } from "@/lib/rewards";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
-import { LogOut, User, Package, Loader2, Trash2 } from "lucide-react";
+import { LogOut, User, Package, Loader2, Trash2, Trophy, ChevronRight } from "lucide-react";
 
 import ReputationDashboard, {
   isTrustedUser,
@@ -36,6 +38,13 @@ export default function Profile() {
         ...(profile || {}),
       };
     },
+  });
+
+  /* 🏆 REWARDS */
+  const { data: rewards } = useQuery({
+    queryKey: ["my-rewards"],
+    queryFn: getMyRewards,
+    enabled: !!currentUser?.id,
   });
 
   /* 📦 USER ITEMS */
@@ -121,6 +130,25 @@ export default function Profile() {
           </div>
 
         </div>
+      </div>
+
+      {/* REWARDS */}
+      <div className="px-4 mb-4">
+        <Link
+          to="/rewards"
+          className="flex items-center gap-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-2xl p-4"
+        >
+          <div className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center shrink-0">
+            <Trophy size={18} className="text-amber-300" />
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold text-sm">Community Rewards</p>
+            <p className="text-xs text-primary-foreground/80">
+              {rewards ? `${rewards.points} points earned` : "Earn points, make a difference"}
+            </p>
+          </div>
+          <ChevronRight size={18} className="text-primary-foreground/70 shrink-0" />
+        </Link>
       </div>
 
       {/* STATS */}

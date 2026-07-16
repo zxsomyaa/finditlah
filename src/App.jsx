@@ -28,6 +28,7 @@ import MapView from "@/pages/MapView";
 import Chats from "@/pages/Chats";
 import ChatRoom from "@/pages/ChatRoom";
 import Profile from "@/pages/Profile";
+import Rewards from "@/pages/Rewards";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
 import AdminDashboard from "@/pages/AdminDashboard";
@@ -75,6 +76,7 @@ function AnimatedRoutes() {
               <Route path="/chat/:conversationId" element={<ChatRoom />} />
 
               <Route path="/profile" element={<Profile />} />
+              <Route path="/rewards" element={<Rewards />} />
               <Route path="/item/:id" element={<ItemDetail />} />
             </Route>
           </Route>
