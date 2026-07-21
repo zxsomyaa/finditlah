@@ -168,6 +168,16 @@ export default function Login() {
             </Link>
           </p>
 
+          {/* INSTAGRAM */}
+          <a
+            href="https://instagram.com/finditlah"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block text-center text-xs text-muted-foreground hover:text-primary transition mt-4"
+          >
+            Follow @finditlah on Instagram for updates &amp; upcoming features
+          </a>
+
         </motion.div>
       </div>
 
