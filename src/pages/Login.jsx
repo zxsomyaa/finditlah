@@ -4,7 +4,7 @@ import { useNavigate, Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { Mail, Lock, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react"
 import { supabase } from "@/lib/supabase-client"
-import SocialLoginButtons from "@/components/auth/SocialLoginButtons"
+import CommunityTagline from "@/components/auth/CommunityTagline"
 import AuthShowcase from "@/components/auth/AuthShowcase"
 
 export default function Login() {
@@ -89,7 +89,7 @@ export default function Login() {
             Sign in to keep reuniting people with their belongings.
           </p>
 
-          <SocialLoginButtons />
+          <CommunityTagline />
 
           {/* FORM */}
           <form onSubmit={handleLogin} className="space-y-4 text-left mt-5">

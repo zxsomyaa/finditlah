@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams, Link } from "react-router-dom"
 import { supabase } from "@/lib/supabase-client"
 import { motion } from "framer-motion"
 import { Mail, Lock, User, Eye, EyeOff, AlertCircle, Loader2, Gift } from "lucide-react"
-import SocialLoginButtons from "@/components/auth/SocialLoginButtons"
+import CommunityTagline from "@/components/auth/CommunityTagline"
 import AuthShowcase from "@/components/auth/AuthShowcase"
 import { redeemReferral } from "@/lib/rewards"
 
@@ -102,7 +102,7 @@ export default function Signup() {
             </div>
           )}
 
-          <SocialLoginButtons />
+          <CommunityTagline />
 
           {/* FORM */}
           <form onSubmit={handleSignup} className="space-y-4 text-left mt-5">
