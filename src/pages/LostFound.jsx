@@ -7,6 +7,7 @@ import { usePageMode } from "@/lib/SiteContext";
 import { LOST_CATEGORIES, labelFor } from "@/lib/categories";
 import { cn } from "@/lib/utils";
 import { PageBand, Container, ItemTile, TileSkeleton, EmptyState } from "@/components/site/parts";
+import { EXAMPLE_ITEMS, withExamples } from "@/lib/showcase";
 
 const TYPES = [
   { value: "all", label: "All" },
@@ -44,6 +45,10 @@ export default function LostFound() {
       ),
     [items, type, category, query]
   );
+  // While the site is new, top up an unfiltered list with tagged example posts.
+  const shown = !query && category === "all"
+    ? withExamples(results, EXAMPLE_ITEMS.filter((e) => type === "all" || e.type === type), 6)
+    : results;
 
   return (
     <>
@@ -95,9 +100,9 @@ export default function LostFound() {
 
         {isLoading ? (
           <TileSkeleton />
-        ) : results.length ? (
+        ) : shown.length ? (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-4">
-            {results.map((i) => <ItemTile key={i.id} item={i} />)}
+            {shown.map((i) => <ItemTile key={i.id} item={i} />)}
           </div>
         ) : (
           <EmptyState title="Nothing matches yet" action={<Link to="/post?type=lost" className="rounded-xl bg-lost px-5 py-3 font-bold text-white">Post a lost report</Link>}>

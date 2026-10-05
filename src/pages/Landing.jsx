@@ -7,7 +7,8 @@ import { listListings, formatPrice } from "@/lib/thrift";
 import { conditionLabel } from "@/lib/categories";
 import { useSite, bandClass } from "@/lib/SiteContext";
 import { cn } from "@/lib/utils";
-import { ItemArt, ItemTile, ListingTile, Pill, Container } from "@/components/site/parts";
+import { ItemArt, ItemTile, ListingTile, Pill, Container, ExampleTag } from "@/components/site/parts";
+import { EXAMPLE_ITEMS, EXAMPLE_LISTINGS, withExamples } from "@/lib/showcase";
 
 const COPY = {
   l: {
@@ -22,15 +23,22 @@ const COPY = {
 
 /** @param {{ entries: any[], kind: "l"|"t" }} props */
 function MarqueeRow({ entries, kind, reverse }) {
+  // Repeat short lists so the strip always fills the screen.
+  const base = entries.length && entries.length < 6
+    ? Array.from({ length: Math.ceil(6 / entries.length) }).flatMap(() => entries)
+    : entries;
   const cards = (/** @type {boolean} */ dup) =>
-    entries.map((x) => (
-      <Link
-        key={(dup ? "d" : "") + x.id}
+    base.map((x, i) => {
+      const Tag = x.example ? "div" : Link;
+      return (
+      <Tag
+        key={(dup ? "d" : "") + i + x.id}
         to={kind === "l" ? `/item/${x.id}` : `/thrift/${x.id}`}
-        aria-hidden={dup || undefined}
-        tabIndex={dup ? -1 : undefined}
-        className="mr-3.5 flex min-w-[280px] items-center gap-3.5 rounded-[20px] bg-white py-2.5 pl-2.5 pr-5 text-ink shadow-[0_14px_30px_-20px_rgba(36,33,28,.45)] transition hover:-translate-y-0.5"
+        aria-hidden={dup || i >= entries.length || undefined}
+        tabIndex={dup || i >= entries.length ? -1 : undefined}
+        className="relative mr-3.5 flex min-w-[280px] items-center gap-3.5 rounded-[20px] bg-white py-2.5 pl-2.5 pr-5 text-ink shadow-[0_14px_30px_-20px_rgba(36,33,28,.45)] transition hover:-translate-y-0.5"
       >
+        {x.example && <ExampleTag className="left-auto right-2.5 top-2 px-2 py-0.5 text-[10px]" />}
         <ItemArt imageUrl={x.image_url} category={x.category} kind={kind} alt="" className="h-[76px] w-[76px] shrink-0 rounded-2xl" iconSize={34} />
         <span className="flex min-w-0 flex-col items-start gap-1">
           {kind === "l"
@@ -43,8 +51,9 @@ function MarqueeRow({ entries, kind, reverse }) {
             {kind === "l" ? x.location_name : [x.location_name, conditionLabel(x.condition)].filter(Boolean).join(" · ")}
           </span>
         </span>
-      </Link>
-    ));
+      </Tag>
+      );
+    });
   return (
     <div className="overflow-hidden">
       <div className={cn("flex w-max", reverse ? "fil-marquee-reverse" : "fil-marquee")}>
@@ -70,10 +79,13 @@ export default function Landing() {
   });
 
   const m = mode === "t" ? "t" : "l";
-  const entries = (m === "l" ? items : listings).slice(0, 10);
+  const entries = (m === "l"
+    ? withExamples(items, EXAMPLE_ITEMS, 8)
+    : withExamples(listings, EXAMPLE_LISTINGS, 8)
+  ).slice(0, 10);
   const half = Math.ceil(entries.length / 2);
   const rowA = entries.length >= 6 ? entries.slice(0, half) : entries;
-  const rowB = entries.length >= 6 ? entries.slice(half) : entries.slice().reverse();
+  const rowB = entries.length >= 6 ? entries.slice(half) : entries.length >= 3 ? entries.slice().reverse() : [];
 
   /** @param {React.FormEvent} e */
   const submit = (e) => {
@@ -82,7 +94,12 @@ export default function Landing() {
     navigate((m === "l" ? "/lost" : "/thrift") + qs);
   };
 
-  const foundRecent = items.filter((i) => i.type === "found").slice(0, 8);
+  const foundRecent = withExamples(
+    items.filter((i) => i.type === "found").slice(0, 8),
+    EXAMPLE_ITEMS.filter((i) => i.type === "found"),
+    4
+  );
+  const thriftRecent = withExamples(listings.slice(0, 8), EXAMPLE_LISTINGS, 4);
 
   return (
     <>
@@ -139,7 +156,7 @@ export default function Landing() {
         {entries.length > 0 && (
           <div key={m} className="fil-marquee-wrap fil-fade-edges mt-11 flex flex-col gap-3.5 animate-in fade-in duration-300" aria-label="Recent posts">
             <MarqueeRow entries={rowA} kind={m} />
-            <MarqueeRow entries={rowB} kind={m} reverse />
+            {rowB.length > 0 && <MarqueeRow entries={rowB} kind={m} reverse />}
           </div>
         )}
       </section>
@@ -168,9 +185,9 @@ export default function Landing() {
                 <Link to="/thrift" className="font-bold">See all →</Link>
               </div>
             </div>
-            {listings.length ? (
+            {thriftRecent.length ? (
               <div className="grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-4">
-                {listings.slice(0, 8).map((l) => <ListingTile key={l.id} listing={l} />)}
+                {thriftRecent.map((l) => <ListingTile key={l.id} listing={l} />)}
               </div>
             ) : (
               <p className="text-muted-foreground">No listings yet. <Link to="/sell" className="font-bold underline">Be the first to sell something</Link>.</p>

@@ -7,6 +7,7 @@ import { THRIFT_CATEGORIES } from "@/lib/categories";
 import { usePageMode, useSite } from "@/lib/SiteContext";
 import { cn } from "@/lib/utils";
 import { PageBand, Container, ListingTile, TileSkeleton, EmptyState } from "@/components/site/parts";
+import { EXAMPLE_LISTINGS, withExamples } from "@/lib/showcase";
 
 export default function ThriftBrowse() {
   usePageMode("t");
@@ -25,9 +26,9 @@ export default function ThriftBrowse() {
     setParams(next, { replace: true });
   };
 
-  const { data: listings = [], isLoading, isError } = useQuery({
+  const { data: listings = [], isLoading } = useQuery({
     queryKey: ["thrift-listings"],
-    queryFn: listListings,
+    queryFn: () => listListings().catch(() => []),
   });
 
   const results = useMemo(() => {
@@ -39,6 +40,10 @@ export default function ThriftBrowse() {
     if (sort === "high") r.sort((a, b) => Number(b.price) - Number(a.price));
     return r;
   }, [listings, category, sort, query]);
+  // While the site is new, top up the list with tagged example listings.
+  const shown = !query
+    ? withExamples(results, EXAMPLE_LISTINGS.filter((e) => category === "all" || e.category === category), 6)
+    : results;
 
   return (
     <>
@@ -88,11 +93,9 @@ export default function ThriftBrowse() {
 
         {isLoading ? (
           <TileSkeleton />
-        ) : isError ? (
-          <EmptyState title="Thrift is almost ready">The thrift tables haven&apos;t been set up in the database yet.</EmptyState>
-        ) : results.length ? (
+        ) : shown.length ? (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-4">
-            {results.map((l) => <ListingTile key={l.id} listing={l} />)}
+            {shown.map((l) => <ListingTile key={l.id} listing={l} />)}
           </div>
         ) : (
           <EmptyState title={listings.length ? "Nothing matches yet" : "No listings yet"} action={<Link to="/sell" className="rounded-xl bg-thrift px-5 py-3 font-bold text-white">Sell something</Link>}>
