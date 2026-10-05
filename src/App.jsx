@@ -1,26 +1,19 @@
 import { Toaster } from "@/components/ui/toaster";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClientInstance } from "@/lib/query-client";
-
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  useLocation,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { ThemeProvider } from "next-themes";
 
 import PageNotFound from "./lib/PageNotFound";
 import { AuthProvider } from "@/lib/AuthContext";
-
-import { ThemeProvider } from "next-themes";
-import { AnimatePresence, motion } from "framer-motion";
-
-import AppLayout from "@/components/layout/AppLayout";
+import { SiteProvider } from "@/lib/SiteContext";
+import SiteLayout from "@/components/site/SiteLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 // Pages
-import Home from "@/pages/Home";
+import Landing from "@/pages/Landing";
+import LostFound from "@/pages/LostFound";
 import PostItem from "@/pages/PostItem";
 import EditPost from "@/pages/EditPost";
 import ItemDetail from "@/pages/ItemDetail";
@@ -33,73 +26,69 @@ import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
 import AdminDashboard from "@/pages/AdminDashboard";
 import ResetPassword from "@/pages/ResetPassword";
+import ThriftBrowse from "@/pages/thrift/ThriftBrowse";
+import ListingDetail from "@/pages/thrift/ListingDetail";
+import SellItem from "@/pages/thrift/SellItem";
+import Orders from "@/pages/thrift/Orders";
 
-const pageVariants = {
-  initial: { opacity: 0, x: 20 },
-  animate: { opacity: 1, x: 0 },
-  exit: { opacity: 0, x: -20 },
-};
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 
-const pageTransition = { duration: 0.2, ease: "easeInOut" };
-
-function AnimatedRoutes() {
-  const location = useLocation();
-
+function AppRoutes() {
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={location.pathname}
-        variants={pageVariants}
-        initial="initial"
-        animate="animate"
-        exit="exit"
-        transition={pageTransition}
-        style={{ width: "100%" }}
-      >
-        <Routes location={location}>
-          {/* AUTH */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
+    <Routes>
+      <Route element={<SiteLayout />}>
+        {/* PUBLIC — anyone can browse */}
+        <Route path="/" element={<Landing />} />
+        <Route path="/lost" element={<LostFound />} />
+        <Route path="/item/:id" element={<ItemDetail />} />
+        <Route path="/thrift" element={<ThriftBrowse />} />
+        <Route path="/thrift/:id" element={<ListingDetail />} />
+        <Route path="/map" element={<MapView />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* PROTECTED APP */}
-          <Route element={<ProtectedRoute />}>
-            <Route element={<AppLayout />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/map" element={<MapView />} />
+        {/* NEEDS AN ACCOUNT */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/post" element={<PostItem />} />
+          <Route path="/posts" element={<Navigate to="/post" replace />} />
+          <Route path="/edit-post/:id" element={<EditPost />} />
+          <Route path="/sell" element={<SellItem />} />
+          <Route path="/sell/:id/edit" element={<SellItem />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/chats" element={<Chats />} />
+          <Route path="/chat/:conversationId" element={<ChatRoom />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/rewards" element={<Rewards />} />
+        </Route>
+      </Route>
 
-              <Route path="/post" element={<PostItem />} />
-              <Route path="/posts" element={<Navigate to="/post" replace />} />
-              <Route path="/edit-post/:id" element={<EditPost />} />
+      {/* ADMIN */}
+      <Route path="/admin" element={<AdminDashboard />} />
 
-              <Route path="/chats" element={<Chats />} />
-              <Route path="/chat/:conversationId" element={<ChatRoom />} />
-
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/rewards" element={<Rewards />} />
-              <Route path="/item/:id" element={<ItemDetail />} />
-            </Route>
-          </Route>
-
-          {/* ADMIN */}
-          <Route path="/admin" element={<AdminDashboard />} />
-
-          {/* 404 */}
-          <Route path="*" element={<PageNotFound />} />
-        </Routes>
-      </motion.div>
-    </AnimatePresence>
+      {/* 404 */}
+      <Route path="*" element={<PageNotFound />} />
+    </Routes>
   );
 }
 
 export default function App() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <ThemeProvider attribute="class" forcedTheme="light" defaultTheme="light">
       <AuthProvider>
         <QueryClientProvider client={queryClientInstance}>
-          <Router>
-            <AnimatedRoutes />
-          </Router>
+          <SiteProvider>
+            <Router>
+              <ScrollToTop />
+              <AppRoutes />
+            </Router>
+          </SiteProvider>
           <Toaster />
         </QueryClientProvider>
       </AuthProvider>

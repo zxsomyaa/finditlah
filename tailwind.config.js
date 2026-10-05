@@ -14,6 +14,18 @@ module.exports = {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
+  			cream: '#F2EEE6',
+  			blush: '#FCF2F1',
+  			ink: '#24211C',
+  			rosewood: '#3A1C20',
+  			lost: {
+  				DEFAULT: '#6A5332',
+  				soft: '#EFE9DD'
+  			},
+  			thrift: {
+  				DEFAULT: '#A8404F',
+  				soft: '#FBE9EB'
+  			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {

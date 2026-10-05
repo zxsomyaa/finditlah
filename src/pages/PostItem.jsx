@@ -1,296 +1,165 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import { Loader2, ImagePlus } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Loader2, Camera, Check, Search, Tag } from "lucide-react";
 import { db } from "@/lib/db";
-import { supabase } from "@/lib/supabase-client";
+import { useAuth } from "@/lib/AuthContext";
 import { awardPoints } from "@/lib/rewards";
+import { uploadImage } from "@/lib/upload";
+import { LOST_CATEGORIES, labelFor } from "@/lib/categories";
+import { usePageMode, useSite } from "@/lib/SiteContext";
 import { toast } from "@/components/ui/use-toast";
+import { cn } from "@/lib/utils";
+import { PageBand, Container, ItemTile, inputClass } from "@/components/site/parts";
 
-/* ---------------- CLOUDINARY CONFIG ---------------- */
-const CLOUD_NAME = "dlu21nvii";
-const UPLOAD_PRESET = "fxipenex";
-
-/* ---------------- CATEGORIES ---------------- */
-const categories = [
-  "general",
-  "electronics",
-  "wallet",
-  "keys",
-  "bags",
-  "documents",
-  "jewellery",
-  "clothing",
-  "phone",
-  "laptop",
-  "watch",
-  "id card",
-  "passport",
-  "student card",
-  "books",
-  "water bottle",
-  "umbrella",
-  "accessories",
-  "sports items",
-  "headphones",
-  "charger",
-  "others",
-];
-
-/* ---------------- UPLOAD FUNCTION ---------------- */
-/** @param {File} file */
-const uploadToCloudinary = async (file) => {
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", UPLOAD_PRESET);
-
-  const res = await fetch(
-    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-    {
-      method: "POST",
-      body: formData,
-    }
+/** @param {{ to: string, active: boolean, icon: any, tone: "l"|"t", title: string, sub: string }} props */
+function TypeCard({ to, active, icon: Icon, tone, title, sub }) {
+  return (
+    <Link to={to} aria-current={active ? "true" : undefined}
+      className={cn("flex min-h-[132px] flex-col gap-2.5 rounded-[22px] border-2 bg-card p-4 transition hover:-translate-y-0.5",
+        active ? "border-ink shadow-[0_18px_40px_-24px_rgba(36,33,28,.45)]" : "border-border")}>
+      <span className={cn("flex h-11 w-11 items-center justify-center rounded-xl", tone === "t" ? "bg-thrift-soft text-thrift" : "bg-lost-soft text-lost")}><Icon size={21} /></span>
+      <b className="text-[17px]">{title}</b>
+      <span className="text-sm text-muted-foreground">{sub}</span>
+    </Link>
   );
-
-  const data = await res.json();
-
-  if (!data.secure_url) {
-    throw new Error(data.error?.message || "Image upload failed");
-  }
-
-  return data.secure_url;
-};
+}
 
 export default function PostItem() {
+  usePageMode("l");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { openHelp } = useSite();
+  const [params] = useSearchParams();
+  const type = params.get("type") === "lost" ? "lost" : "found";
 
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [form, setForm] = useState({ title: "", description: "", category: "general", location_name: "", date: "", image_url: "" });
 
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    category: "general",
-    location_name: "",
-    date: "",
-    type: "lost",
-    image_url: "",
-  });
+  useEffect(() => setError(""), [type]);
 
-  /**
-   * @param {string} key
-   * @param {any} value
-   */
-  const handleChange = (key, value) => {
-    setForm((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-  };
+  /** @param {string} key @param {any} value */
+  const set = (key, value) => setForm((p) => ({ ...p, [key]: value }));
 
   /** @param {React.ChangeEvent<HTMLInputElement>} e */
-  const handleImageUpload = async (e) => {
+  const onImage = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     try {
       setUploading(true);
-      const url = await uploadToCloudinary(file);
-
-      setForm((prev) => ({
-        ...prev,
-        image_url: url,
-      }));
+      set("image_url", await uploadImage(file));
     } catch (err) {
-      console.error(err);
-      alert((err instanceof Error && err.message) || "Image upload failed");
+      setError(err instanceof Error ? err.message : "Image upload failed");
     } finally {
       setUploading(false);
     }
   };
 
-  const handleSubmit = async () => {
-    if (!form.title || !form.description) {
-      alert("Title and Description required");
+  /** @param {React.FormEvent} e */
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!form.title.trim() || !form.description.trim()) {
+      setError("Please add a title and a short description.");
       return;
     }
-
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
-
-    if (error || !user) {
-      alert("Please login first");
-      return;
-    }
-
+    if (!user) return navigate("/login");
     try {
       setSubmitting(true);
-
       const created = await db.entities.Item.create({
         ...form,
+        date: form.date || null,
+        type,
         user_id: user.id,
         created_date: new Date().toISOString(),
         status: "active",
       });
-
       try {
-        const earned = await awardPoints(form.type === "found" ? "post_found" : "report_lost", created.id);
-        if (earned > 0) {
-          toast({ title: `+${earned} points`, description: "Thanks for helping the community!" });
-        }
-      } catch (rewardsErr) {
-        console.error(rewardsErr);
-      }
-
+        const earned = await awardPoints(type === "found" ? "post_found" : "report_lost", created.id);
+        if (earned > 0) toast({ title: `+${earned} points`, description: "Thanks for helping the community!" });
+      } catch (rewardsErr) { console.error(rewardsErr); }
       queryClient.invalidateQueries({ queryKey: ["items"] });
-      navigate("/");
+      navigate(`/item/${created.id}`);
     } catch (err) {
-      console.error(err);
-      alert((err instanceof Error && err.message) || "Failed to create post");
+      setError(err instanceof Error ? err.message : "Couldn't create the post");
     } finally {
       setSubmitting(false);
     }
   };
 
+  const preview = {
+    id: "preview", type, title: form.title || "Your item's name", location_name: form.location_name || "Location",
+    category: form.category, image_url: form.image_url, created_date: new Date().toISOString(), date: form.date,
+  };
+
   return (
-    <div className="min-h-screen bg-background px-4 py-6 pb-28">
-      <div className="w-full max-w-xl mx-auto bg-card border border-border rounded-2xl shadow-sm p-5 space-y-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Create Post</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Share details so others can help you find it.
-          </p>
+    <>
+      <PageBand>
+        <span className="text-xs font-bold uppercase tracking-[0.14em] opacity-70">Post</span>
+        <h1 className="mt-2 text-[clamp(32px,4.6vw,52px)] font-extrabold leading-[1.04] tracking-tight">What would you like to post?</h1>
+        <p className="mt-2 text-[17px] opacity-85">
+          Each post takes about a minute.{" "}
+          <button type="button" onClick={() => openHelp("post")} className="font-bold underline underline-offset-4">Learn more about posting</button>
+        </p>
+      </PageBand>
+
+      <Container className="pb-16">
+        <div className="grid grid-cols-1 gap-3.5 pt-6 sm:grid-cols-3">
+          <TypeCard to="/post?type=found" active={type === "found"} icon={Check} tone="l" title="I found something" sub="Help it get back to its owner." />
+          <TypeCard to="/post?type=lost" active={type === "lost"} icon={Search} tone="l" title="I lost something" sub="Post a report so finders can reach you." />
+          <TypeCard to="/sell" active={false} icon={Tag} tone="t" title="Sell something" sub="Clothes and small items only." />
         </div>
 
-        {/* TYPE */}
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-foreground">
-            Post Type
-          </label>
-          <select
-            value={form.type}
-            onChange={(e) => handleChange("type", e.target.value)}
-            className="w-full rounded-xl border border-border bg-background text-foreground px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
-          >
-            <option value="lost">Lost Item</option>
-            <option value="found">Found Item</option>
-          </select>
-        </div>
+        <div className="grid items-start gap-6 pt-6 lg:grid-cols-[1.3fr_.7fr]">
+          <form onSubmit={submit} className="flex flex-col gap-4 rounded-[22px] border border-border p-5 sm:p-7">
+            <h2 className="text-2xl font-extrabold tracking-tight">{type === "found" ? "Tell us about what you found" : "Tell us what you lost"}</h2>
 
-        {/* IMAGE */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">
-            Item Image
-          </label>
-
-          <div className="border border-border rounded-xl bg-background p-3">
-            <label className="flex items-center justify-center gap-2 cursor-pointer text-sm text-muted-foreground border border-dashed border-border rounded-xl py-4 hover:bg-muted transition">
-              <ImagePlus className="w-5 h-5" />
-              {uploading ? "Uploading image..." : "Upload Image"}
-
-              <input
-                type="file"
-                accept="image/*"
-                hidden
-                onChange={handleImageUpload}
-              />
+            <label className="relative flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-border bg-muted p-6 text-center text-muted-foreground hover:border-ink/50">
+              {uploading ? <Loader2 className="animate-spin" /> : <Camera size={28} />}
+              <b className="text-foreground">{form.image_url ? "Change photo" : "Add a photo"}</b>
+              <span className="text-sm">{uploading ? "Uploading…" : "A clear photo helps people recognise it."}</span>
+              <input type="file" accept="image/*" className="sr-only" onChange={onImage} />
             </label>
 
-            {form.image_url && (
-              <div className="mt-3 w-full h-44 bg-muted rounded-xl overflow-hidden flex items-center justify-center">
-                <img
-                  src={form.image_url}
-                  alt="preview"
-                  className="max-w-full max-h-full object-contain"
-                />
-              </div>
-            )}
-          </div>
-        </div>
+            <div className="grid gap-3.5 sm:grid-cols-2">
+              <label className="flex flex-col gap-1.5 text-sm font-bold">What is it?
+                <input id="post-title" className={inputClass} placeholder="e.g. Black leather wallet" value={form.title} onChange={(e) => set("title", e.target.value)} />
+              </label>
+              <label className="flex flex-col gap-1.5 text-sm font-bold">Category
+                <select id="post-category" className={inputClass} value={form.category} onChange={(e) => set("category", e.target.value)}>
+                  {LOST_CATEGORIES.map((c) => <option key={c} value={c}>{labelFor(c)}</option>)}
+                </select>
+              </label>
+              <label className="flex flex-col gap-1.5 text-sm font-bold">{type === "found" ? "Where did you find it?" : "Where did you lose it?"}
+                <input id="post-location" className={inputClass} placeholder="e.g. Woodlands MRT, Tampines Mall" value={form.location_name} onChange={(e) => set("location_name", e.target.value)} />
+              </label>
+              <label className="flex flex-col gap-1.5 text-sm font-bold">When?
+                <input id="post-date" type="date" className={inputClass} value={form.date} onChange={(e) => set("date", e.target.value)} />
+              </label>
+            </div>
+            <label className="flex flex-col gap-1.5 text-sm font-bold">Description
+              <textarea id="post-description" rows={4} className={cn(inputClass, "resize-y")}
+                placeholder={type === "found" ? "Where is it now? Keep one detail back so you can check the real owner." : "Colour, brand, anything distinctive"}
+                value={form.description} onChange={(e) => set("description", e.target.value)} />
+            </label>
 
-        {/* TITLE */}
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-foreground">Title</label>
-          <input
-            placeholder="e.g. Gold earring"
-            value={form.title}
-            onChange={(e) => handleChange("title", e.target.value)}
-            className="w-full rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
+            {error && <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2.5 text-sm text-destructive">{error}</p>}
 
-        {/* DESCRIPTION */}
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-foreground">
-            Description
-          </label>
-          <textarea
-            placeholder="Describe the item clearly..."
-            value={form.description}
-            onChange={(e) => handleChange("description", e.target.value)}
-            rows={4}
-            className="w-full rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground px-4 py-3 text-sm outline-none resize-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
+            <button type="submit" disabled={submitting || uploading} className="inline-flex items-center justify-center gap-2 self-start rounded-xl bg-lost px-6 py-3 font-bold text-white disabled:opacity-60">
+              {submitting && <Loader2 size={17} className="animate-spin" />}
+              {type === "found" ? "Post found item" : "Post lost report"}
+            </button>
+          </form>
 
-        {/* CATEGORY */}
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-foreground">
-            Category
-          </label>
-          <select
-            value={form.category}
-            onChange={(e) => handleChange("category", e.target.value)}
-            className="w-full rounded-xl border border-border bg-background text-foreground px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
-          >
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat.charAt(0).toUpperCase() + cat.slice(1)}
-              </option>
-            ))}
-          </select>
+          <aside className="sticky top-6 flex flex-col gap-3" aria-label="Live preview">
+            <span className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Live preview</span>
+            <div className="pointer-events-none"><ItemTile item={preview} /></div>
+            <p className="text-sm text-muted-foreground">This is how your post will look in search.</p>
+          </aside>
         </div>
-
-        {/* LOCATION */}
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-foreground">
-            Location
-          </label>
-          <input
-            placeholder="e.g. Jurong, Orchard, Tampines"
-            value={form.location_name}
-            onChange={(e) => handleChange("location_name", e.target.value)}
-            className="w-full rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
-
-        {/* DATE */}
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-foreground">Date</label>
-          <input
-            type="date"
-            value={form.date}
-            onChange={(e) => handleChange("date", e.target.value)}
-            className="w-full rounded-xl border border-border bg-background text-foreground px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
-
-        {/* SUBMIT */}
-        <button
-          onClick={handleSubmit}
-          disabled={submitting || uploading}
-          className="w-full bg-primary hover:opacity-90 text-primary-foreground py-3 rounded-xl font-semibold flex justify-center items-center transition disabled:opacity-60"
-        >
-          {submitting || uploading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : (
-            "Create Post"
-          )}
-        </button>
-      </div>
-    </div>
+      </Container>
+    </>
   );
 }

@@ -1,14 +1,14 @@
 import { useState } from "react"
-import { useNavigate, useSearchParams, Link } from "react-router-dom"
+import { useNavigate, useSearchParams, Link, useLocation } from "react-router-dom"
+import { Eye, EyeOff, Loader2, Gift } from "lucide-react"
 import { supabase } from "@/lib/supabase-client"
-import { motion } from "framer-motion"
-import { Mail, Lock, User, Eye, EyeOff, AlertCircle, Loader2, Gift } from "lucide-react"
-import CommunityTagline from "@/components/auth/CommunityTagline"
-import AuthShowcase from "@/components/auth/AuthShowcase"
 import { redeemReferral } from "@/lib/rewards"
+import AuthShell, { GoogleButton, OrDivider } from "@/components/site/AuthShell"
+import { inputClass } from "@/components/site/parts"
 
 export default function Signup() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
   const referralCode = searchParams.get("ref")
 
@@ -16,48 +16,48 @@ export default function Signup() {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [username, setUsername] = useState("")
-  const [error, setError] = useState(/** @type {string | null} */ (null))
+  const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+
+  // Remember the referral code so it still counts if they choose Google sign-in.
+  if (referralCode) {
+    try { localStorage.setItem("fil-ref", referralCode) } catch (_e) { /* ignore */ }
+  }
 
   /** @param {React.FormEvent<HTMLFormElement>} e */
   const handleSignup = async (e) => {
     e.preventDefault()
-    setError(null)
+    setError("")
+    if (!username.trim()) return setError("Please choose a username.")
+    if (password.length < 8) return setError("Your password needs at least 8 characters.")
     setLoading(true)
 
     try {
-      // 1. Create auth user
-      const { data, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-      })
-
+      const { data, error: authError } = await supabase.auth.signUp({ email, password })
       if (authError) throw authError
-
       const user = data.user
+      if (!user) throw new Error("Couldn't create your account. Please try again.")
 
-      if (!user) {
-        throw new Error("User creation failed. Try again.")
+      // Save profile (the profile may already exist if a session started straight away)
+      const { error: profileError } = await supabase.from("profiles").insert({ id: user.id, username, email })
+      if (profileError) {
+        if (profileError.code === "23505") {
+          await supabase.from("profiles").update({ username }).eq("id", user.id)
+        } else {
+          throw profileError
+        }
       }
-
-      // 2. Save profile
-      const { error: profileError } = await supabase.from("profiles").insert({
-        id: user.id,
-        username,
-        email,
-      })
-
-      if (profileError) throw profileError
 
       if (referralCode) {
         try {
           await redeemReferral(referralCode)
+          localStorage.removeItem("fil-ref")
         } catch (referralErr) {
           console.error(referralErr)
         }
       }
 
-      navigate("/login")
+      navigate("/login", { state: location.state })
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -66,135 +66,49 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <AuthShell>
+      <div className="flex flex-col gap-4">
+        <h1 className="text-3xl font-extrabold tracking-tight">Create your account</h1>
+        <p className="-mt-2 text-muted-foreground">Join FindItLah to post, chat and buy.</p>
 
-      <div className="relative w-full lg:w-1/2 min-h-screen flex items-center justify-center px-6 sm:px-10 py-12 overflow-hidden">
-
-        {/* Decorative background (mobile only — desktop has the showcase panel) */}
-        <div className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 rounded-full bg-primary/15 blur-3xl lg:hidden" />
-        <div className="pointer-events-none absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-accent/15 blur-3xl lg:hidden" />
-
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative z-10 w-full max-w-sm"
-        >
-
-          {/* Brand */}
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-              <img src="/assets/logo.png" alt="logo" className="w-6 h-6" />
-            </div>
-            <span className="font-heading text-lg font-bold text-foreground">FindItLah</span>
-          </div>
-
-          <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground mb-1.5">
-            Create your account
-          </h1>
-          <p className="text-muted-foreground text-sm mb-6">
-            Join FindItLah to start posting and finding items.
+        {referralCode && (
+          <p className="flex items-center gap-2 rounded-xl bg-lost-soft px-3 py-2.5 text-sm text-lost">
+            <Gift size={16} className="shrink-0" /> You were invited by a friend. Sign up and they&apos;ll earn reward points!
           </p>
+        )}
 
-          {referralCode && (
-            <div className="flex items-center gap-2 bg-accent/10 border border-accent/20 text-accent text-sm rounded-xl px-3 py-2.5 mb-6">
-              <Gift size={16} className="shrink-0" />
-              <span>You were invited by a friend — sign up and they'll earn reward points!</span>
-            </div>
-          )}
+        <GoogleButton label="Sign up with Google" returnTo={/** @type {any} */ (location.state)?.from || "/"} />
+        <OrDivider />
 
-          <CommunityTagline />
-
-          {/* FORM */}
-          <form onSubmit={handleSignup} className="space-y-4 text-left mt-5">
-
-            {/* Username */}
-            <div className="relative">
-              <User className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-              <input
-                type="text"
-                placeholder="Username"
-                autoComplete="username"
-                className="w-full pl-11 pr-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </div>
-
-            {/* Email */}
-            <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-              <input
-                type="email"
-                placeholder="Email"
-                autoComplete="email"
-                className="w-full pl-11 pr-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-
-            {/* Password */}
-            <div className="relative">
-              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                autoComplete="new-password"
-                className="w-full pl-11 pr-11 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <button
-                type="button"
-                tabIndex={-1}
-                onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition"
-              >
+        <form onSubmit={handleSignup} className="flex flex-col gap-3.5">
+          <label className="flex flex-col gap-1.5 text-sm font-bold">Username
+            <input id="signup-username" autoComplete="username" className={inputClass} placeholder="e.g. alextan" value={username} onChange={(e) => setUsername(e.target.value)} />
+          </label>
+          <label className="flex flex-col gap-1.5 text-sm font-bold">Email
+            <input id="signup-email" type="email" autoComplete="email" className={inputClass} placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </label>
+          <label className="flex flex-col gap-1.5 text-sm font-bold">Password
+            <span className="relative">
+              <input id="signup-password" type={showPassword ? "text" : "password"} autoComplete="new-password" className={`${inputClass} pr-12`} placeholder="At least 8 characters" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground">
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
-            </div>
+            </span>
+          </label>
 
-            {/* Error */}
-            {error && (
-              <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-xl px-3 py-2.5">
-                <AlertCircle size={16} className="mt-0.5 shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
+          {error && <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2.5 text-sm text-destructive">{error}</p>}
 
-            {/* Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-xl font-semibold hover:bg-primary/90 transition disabled:opacity-50"
-            >
-              {loading && <Loader2 className="animate-spin" size={18} />}
-              {loading ? "Creating account..." : "Sign up"}
-            </button>
-          </form>
+          <button type="submit" disabled={loading} className="flex h-12 items-center justify-center gap-2 rounded-xl bg-ink font-bold text-white disabled:opacity-60">
+            {loading && <Loader2 className="animate-spin" size={18} />}
+            {loading ? "Creating account…" : "Sign up"}
+          </button>
+          <p className="text-xs text-muted-foreground">By signing up you agree to our Terms and Privacy Policy.</p>
+        </form>
 
-          {/* Login link */}
-          <p className="text-center text-sm text-muted-foreground mt-8">
-            Already have an account?{" "}
-            <Link to="/login" className="text-primary font-semibold hover:underline">
-              Login
-            </Link>
-          </p>
-
-          {/* INSTAGRAM */}
-          <a
-            href="https://instagram.com/finditlah"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block text-center text-xs text-muted-foreground hover:text-primary transition mt-4"
-          >
-            Follow @finditlah on Instagram for updates &amp; upcoming features
-          </a>
-
-        </motion.div>
+        <p className="text-center text-sm text-muted-foreground">
+          Already have an account? <Link to="/login" state={location.state} className="font-bold text-foreground underline underline-offset-4">Log in</Link>
+        </p>
       </div>
-
-      <AuthShowcase />
-    </div>
+    </AuthShell>
   )
 }

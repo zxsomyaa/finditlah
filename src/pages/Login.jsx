@@ -1,32 +1,34 @@
 import { useState } from "react"
+import { useNavigate, useLocation, Link } from "react-router-dom"
+import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { useAuth } from "@/lib/AuthContext"
-import { useNavigate, Link } from "react-router-dom"
-import { motion } from "framer-motion"
-import { Mail, Lock, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react"
 import { supabase } from "@/lib/supabase-client"
-import CommunityTagline from "@/components/auth/CommunityTagline"
-import AuthShowcase from "@/components/auth/AuthShowcase"
+import AuthShell, { GoogleButton, OrDivider } from "@/components/site/AuthShell"
+import { inputClass } from "@/components/site/parts"
 
 export default function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const from = /** @type {any} */ (location.state)?.from || "/"
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState(/** @type {string | null} */ (null))
+  const [error, setError] = useState("")
+  const [notice, setNotice] = useState("")
   const [loading, setLoading] = useState(false)
   const [resetLoading, setResetLoading] = useState(false)
 
   /** @param {React.FormEvent<HTMLFormElement>} e */
   const handleLogin = async (e) => {
     e.preventDefault()
-    setError(null)
+    setError("")
+    setNotice("")
     setLoading(true)
-
     try {
       await login(email, password)
-      navigate("/")
+      navigate(from, { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -34,154 +36,68 @@ export default function Login() {
     }
   }
 
-  /* 🔥 FORGOT PASSWORD */
   const handleForgotPassword = async () => {
+    setError("")
+    setNotice("")
     if (!email) {
-      alert("Enter your email first")
+      setError("Enter your email above first, then tap Forgot password.")
       return
     }
-
     try {
       setResetLoading(true)
-
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       })
-
       if (error) throw error
-
-      alert("Password reset email sent! Check your inbox.")
+      setNotice("Password reset email sent. Check your inbox.")
     } catch (err) {
-      console.error(err)
-      alert((err instanceof Error && err.message) || "Failed to send reset email")
+      setError((err instanceof Error && err.message) || "Couldn't send the reset email")
     } finally {
       setResetLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <AuthShell>
+      <div className="flex flex-col gap-4">
+        <h1 className="text-3xl font-extrabold tracking-tight">Welcome back</h1>
+        <p className="-mt-2 text-muted-foreground">Log in to post, chat and buy.</p>
 
-      <div className="relative w-full lg:w-1/2 min-h-screen flex items-center justify-center px-6 sm:px-10 py-12 overflow-hidden">
+        <GoogleButton returnTo={from} />
+        <OrDivider />
 
-        {/* Decorative background (mobile only — desktop has the showcase panel) */}
-        <div className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 rounded-full bg-primary/15 blur-3xl lg:hidden" />
-        <div className="pointer-events-none absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-accent/15 blur-3xl lg:hidden" />
-
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative z-10 w-full max-w-sm"
-        >
-
-          {/* Brand */}
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-              <img src="/assets/logo.png" alt="logo" className="w-6 h-6" />
-            </div>
-            <span className="font-heading text-lg font-bold text-foreground">FindItLah</span>
-          </div>
-
-          <h1 className="font-heading text-2xl sm:text-3xl font-bold text-foreground mb-1.5">
-            Welcome back
-          </h1>
-          <p className="text-muted-foreground text-sm mb-8">
-            Sign in to keep reuniting people with their belongings.
-          </p>
-
-          <CommunityTagline />
-
-          {/* FORM */}
-          <form onSubmit={handleLogin} className="space-y-4 text-left mt-5">
-
-            {/* EMAIL */}
-            <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-              <input
-                type="email"
-                placeholder="Email"
-                autoComplete="email"
-                className="w-full pl-11 pr-4 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-
-            {/* PASSWORD */}
-            <div className="relative">
-              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                autoComplete="current-password"
-                className="w-full pl-11 pr-11 py-3 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <button
-                type="button"
-                tabIndex={-1}
-                onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition"
-              >
+        <form onSubmit={handleLogin} className="flex flex-col gap-3.5">
+          <label className="flex flex-col gap-1.5 text-sm font-bold">Email
+            <input id="login-email" type="email" autoComplete="email" className={inputClass} placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </label>
+          <label className="flex flex-col gap-1.5 text-sm font-bold">Password
+            <span className="relative">
+              <input id="login-password" type={showPassword ? "text" : "password"} autoComplete="current-password" className={`${inputClass} pr-12`} value={password} onChange={(e) => setPassword(e.target.value)} />
+              <button type="button" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"} className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground">
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
-            </div>
+            </span>
+          </label>
+          <button type="button" onClick={handleForgotPassword} disabled={resetLoading} className="self-end text-sm font-semibold text-muted-foreground underline-offset-4 hover:underline disabled:opacity-50">
+            {resetLoading ? "Sending…" : "Forgot password?"}
+          </button>
 
-            {/* FORGOT PASSWORD */}
-            <div className="text-right text-sm">
-              <button
-                type="button"
-                onClick={handleForgotPassword}
-                disabled={resetLoading}
-                className="text-muted-foreground hover:text-primary transition disabled:opacity-50"
-              >
-                {resetLoading ? "Sending..." : "Forgot Password?"}
-              </button>
-            </div>
+          {error && <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2.5 text-sm text-destructive">{error}</p>}
+          {notice && <p role="status" className="rounded-xl bg-emerald-50 px-3 py-2.5 text-sm text-emerald-800">{notice}</p>}
 
-            {/* ERROR */}
-            {error && (
-              <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-xl px-3 py-2.5">
-                <AlertCircle size={16} className="mt-0.5 shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
+          <button type="submit" disabled={loading} className="flex h-12 items-center justify-center gap-2 rounded-xl bg-ink font-bold text-white disabled:opacity-60">
+            {loading && <Loader2 className="animate-spin" size={18} />}
+            {loading ? "Logging in…" : "Log in"}
+          </button>
+        </form>
 
-            {/* LOGIN BUTTON */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-3 rounded-xl font-semibold hover:bg-primary/90 transition disabled:opacity-50"
-            >
-              {loading && <Loader2 className="animate-spin" size={18} />}
-              {loading ? "Logging in..." : "Login"}
-            </button>
-
-          </form>
-
-          {/* SIGNUP */}
-          <p className="text-center text-sm text-muted-foreground mt-8">
-            Need an account?{" "}
-            <Link to="/signup" className="text-primary font-semibold hover:underline">
-              Sign up
-            </Link>
-          </p>
-
-          {/* INSTAGRAM */}
-          <a
-            href="https://instagram.com/finditlah"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block text-center text-xs text-muted-foreground hover:text-primary transition mt-4"
-          >
-            Follow @finditlah on Instagram for updates &amp; upcoming features
-          </a>
-
-        </motion.div>
+        <p className="text-center text-sm text-muted-foreground">
+          New here? <Link to="/signup" state={location.state} className="font-bold text-foreground underline underline-offset-4">Create an account</Link>
+        </p>
+        <a href="https://instagram.com/finditlah" target="_blank" rel="noopener noreferrer" className="text-center text-xs text-muted-foreground hover:text-foreground">
+          Follow @finditlah on Instagram for updates &amp; upcoming features
+        </a>
       </div>
-
-      <AuthShowcase />
-    </div>
+    </AuthShell>
   )
 }
