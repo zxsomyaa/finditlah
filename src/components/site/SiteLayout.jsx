@@ -16,10 +16,7 @@ const initialOf = (user) =>
 function Logo() {
   return (
     <Link to="/" className="flex items-center gap-2.5 text-[21px] font-extrabold tracking-tight">
-      <span className="flex items-center" aria-hidden="true">
-        <span className="h-[11px] w-[11px] rounded-full bg-lost" />
-        <span className="-ml-0.5 h-[11px] w-[11px] rounded-full bg-thrift" />
-      </span>
+      <img src="/assets/logo.svg" alt="" className="h-8 w-8" width="32" height="32" />
       FindItLah
     </Link>
   );
