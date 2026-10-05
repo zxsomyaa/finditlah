@@ -31,6 +31,17 @@ export const EXAMPLE_ITEMS = [
     image_url: "/showcase/keys-pink-card-holder.jpg",
     created_date: daysAgo(1),
   },
+  {
+    id: "example-tumbler",
+    example: true,
+    type: "found",
+    title: "Mint tumbler with palm tree gems",
+    description: "Mint green tumbler with a straw lid and a rhinestone palm tree.",
+    category: "water bottle",
+    location_name: "East Coast Park",
+    image_url: "/showcase/rhinestone-tumblers.jpg",
+    created_date: daysAgo(2),
+  },
 ];
 
 export const EXAMPLE_LISTINGS = [
@@ -98,6 +109,32 @@ export const EXAMPLE_LISTINGS = [
     location_name: "Orchard",
     image_url: "/showcase/gold-square-watch.jpg",
     created_at: daysAgo(3),
+  },
+  {
+    id: "example-dress",
+    example: true,
+    title: "Pink jewelled halter dress",
+    description: "Pale pink mini dress with a crystal-trim halter neck.",
+    category: "dresses",
+    price: 38,
+    condition: "like_new",
+    size: "S",
+    location_name: "Orchard",
+    image_url: "/showcase/pink-halter-dress.jpg",
+    created_at: daysAgo(0),
+  },
+  {
+    id: "example-floral-pouch",
+    example: true,
+    title: "Floral embroidered pouch",
+    description: "Cream canvas pouch with hand-embroidered flowers and a gold zip.",
+    category: "bags",
+    price: 14,
+    condition: "like_new",
+    size: "",
+    location_name: "Tiong Bahru",
+    image_url: "/showcase/floral-embroidered-pouch.jpg",
+    created_at: daysAgo(1),
   },
 ];
 
