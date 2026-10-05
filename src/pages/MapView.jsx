@@ -121,8 +121,9 @@ export default function MapView() {
           <div className="relative isolate h-[60vh] min-h-[380px] overflow-hidden rounded-3xl border border-border bg-cream lg:h-[640px]">
             <MapContainer ref={mapRef} center={SINGAPORE} zoom={typeof window !== "undefined" && window.innerWidth < 640 ? 11 : 12} minZoom={10} scrollWheelZoom={false} style={{ height: "100%", width: "100%" }}>
               <TileLayer
-                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                maxZoom={19}
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               />
               {placed.map((item) => (
                 <Marker

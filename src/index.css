@@ -126,3 +126,6 @@
 .leaflet-container { font-family: inherit; }
 .leaflet-popup-content-wrapper { border-radius: 18px; box-shadow: 0 20px 44px -22px rgba(36, 33, 28, .45); }
 .leaflet-popup-content { margin: 12px; }
+
+/* Soften OpenStreetMap's colours to sit with the cream palette */
+.leaflet-tile-pane { filter: saturate(0.55) sepia(0.12) brightness(1.04) contrast(0.95); }
