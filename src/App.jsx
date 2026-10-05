@@ -4,6 +4,7 @@ import { queryClientInstance } from "@/lib/query-client";
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { ThemeProvider } from "next-themes";
+import { Analytics } from "@vercel/analytics/react";
 
 import PageNotFound from "./lib/PageNotFound";
 import { AuthProvider } from "@/lib/AuthContext";
@@ -90,6 +91,7 @@ export default function App() {
             </Router>
           </SiteProvider>
           <Toaster />
+          <Analytics />
         </QueryClientProvider>
       </AuthProvider>
     </ThemeProvider>
