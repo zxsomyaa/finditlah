@@ -94,11 +94,9 @@ export default function Landing() {
     navigate((m === "l" ? "/lost" : "/thrift") + qs);
   };
 
-  const foundRecent = withExamples(
-    items.filter((i) => i.type === "found").slice(0, 8),
-    EXAMPLE_ITEMS.filter((i) => i.type === "found"),
-    4
-  );
+  // Lost and found posts together, topped up with example posts while the site is new
+  const withPhotosFirst = [...items].sort((a, b) => (b.image_url ? 1 : 0) - (a.image_url ? 1 : 0));
+  const lostFoundRecent = withExamples(withPhotosFirst.slice(0, 8), EXAMPLE_ITEMS, 8);
   const thriftRecent = withExamples(listings.slice(0, 8), EXAMPLE_LISTINGS, 4);
 
   return (
@@ -165,15 +163,15 @@ export default function Landing() {
         {m === "l" ? (
           <section>
             <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-              <h2 className="text-[26px] font-extrabold tracking-tight">Found near you</h2>
+              <h2 className="text-[26px] font-extrabold tracking-tight">Lost &amp; Found near you</h2>
               <Link to="/lost" className="font-bold">See all →</Link>
             </div>
-            {foundRecent.length ? (
+            {lostFoundRecent.length ? (
               <div className="grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-4">
-                {foundRecent.map((i) => <ItemTile key={i.id} item={i} />)}
+                {lostFoundRecent.map((i) => <ItemTile key={i.id} item={i} />)}
               </div>
             ) : (
-              <p className="text-muted-foreground">No found items yet. <Link to="/post?type=found" className="font-bold underline">Post the first one</Link>.</p>
+              <p className="text-muted-foreground">Nothing posted yet. <Link to="/post?type=found" className="font-bold underline">Post the first one</Link>.</p>
             )}
           </section>
         ) : (
