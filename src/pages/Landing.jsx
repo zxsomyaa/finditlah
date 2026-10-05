@@ -16,7 +16,7 @@ const COPY = {
     ph: "What did you lose, and where?",
   },
   t: {
-    lede: "Buy and sell preloved clothes and small items. Chat and pay safely in the app.",
+    lede: "Buy and sell preloved clothes and small items. Chat in the app, then meet up or post.",
     ph: "Search preloved clothes and small items",
   },
 };
@@ -143,7 +143,7 @@ export default function Landing() {
               {m === "l" ? (
                 <>Found something instead? <Link to="/post?type=found" className="font-bold underline underline-offset-4">Post it in a minute</Link></>
               ) : (
-                <>Buy and sell preloved, then chat and pay in the app.{" "}
+                <>Buy and sell preloved, then chat and meet up.{" "}
                   <button type="button" onClick={() => openHelp("thrift")} className="font-bold underline underline-offset-4">Learn more</button></>
               )}
             </p>

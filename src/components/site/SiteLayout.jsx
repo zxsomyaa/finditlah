@@ -83,7 +83,7 @@ function AccountMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="w-56 rounded-2xl p-2 font-body">
         <Item icon={User} label="Profile" to="/profile" />
-        <Item icon={Receipt} label="My thrift & orders" to="/orders" />
+        <Item icon={Receipt} label="My thrift" to="/orders" />
         <Item icon={MessageCircle} label="Chats" to="/chats" />
         <Item icon={Gift} label="Rewards" to="/rewards" />
         <DropdownMenuSeparator />
@@ -148,7 +148,7 @@ function SiteFooter() {
         <div>
           <b className="mb-2 block text-foreground">Account</b>
           <Link to="/profile" className={linkCls}>Profile</Link>
-          <Link to="/orders" className={linkCls}>My thrift &amp; orders</Link>
+          <Link to="/orders" className={linkCls}>My thrift</Link>
           <Link to="/rewards" className={linkCls}>Rewards</Link>
         </div>
       </div>

@@ -52,7 +52,7 @@ export default function ThriftBrowse() {
           <span className="text-xs font-bold uppercase tracking-[0.14em] opacity-70">Thrift</span>
           <h1 className="text-[clamp(32px,4.6vw,52px)] font-extrabold leading-[1.04] tracking-tight">Preloved finds from people nearby.</h1>
           <p className="max-w-[56ch] text-[17px] leading-relaxed opacity-85">
-            Clothes and small items, bought and sold right here. Chat, agree on a price and pay in the app.{" "}
+            Clothes and small items, bought and sold right here. Chat, agree on a price, then meet up or post.{" "}
             <button type="button" onClick={() => openHelp("thrift")} className="font-bold underline underline-offset-4">How thrift works</button>
           </p>
           <form onSubmit={(e) => { e.preventDefault(); setParam("q", q.trim()); }}
@@ -106,7 +106,7 @@ export default function ThriftBrowse() {
         <div className="mt-10 flex flex-wrap items-center justify-between gap-4 rounded-3xl bg-blush p-6 sm:p-8">
           <div>
             <h2 className="text-2xl font-extrabold tracking-tight">Clearing your closet?</h2>
-            <p className="mt-1 text-muted-foreground">List clothes and small items in about a minute. Buyers chat and pay in the app.</p>
+            <p className="mt-1 text-muted-foreground">List clothes and small items in about a minute. Buyers chat with you to arrange it.</p>
           </div>
           <div className="flex flex-wrap gap-2.5">
             <button onClick={() => openHelp("thrift")} className="rounded-xl border border-border bg-card px-5 py-3 font-bold">Learn more</button>

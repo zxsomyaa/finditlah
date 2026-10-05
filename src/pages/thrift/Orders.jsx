@@ -87,7 +87,7 @@ export default function Orders() {
     <>
       <PageBand>
         <span className="text-xs font-bold uppercase tracking-[0.14em] opacity-70">Thrift</span>
-        <h1 className="mt-2 text-[clamp(30px,4.2vw,46px)] font-extrabold tracking-tight">My thrift &amp; orders</h1>
+        <h1 className="mt-2 text-[clamp(30px,4.2vw,46px)] font-extrabold tracking-tight">My thrift</h1>
       </PageBand>
       <Container className="pb-16">
         {justPaid && (

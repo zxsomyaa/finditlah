@@ -223,7 +223,7 @@ export default function Profile() {
 
         {/* Shortcuts */}
         <section className="grid grid-cols-1 gap-3 pt-10 sm:grid-cols-2" aria-label="More">
-          <Shortcut to="/orders" icon={Receipt} title="My thrift & orders" sub="Things you're selling and buying" />
+          <Shortcut to="/orders" icon={Receipt} title="My thrift" sub="Things you're selling" />
           <Shortcut to="/chats" icon={MessageCircle} title="Chats" sub="Messages with finders, owners and buyers" />
         </section>
 
