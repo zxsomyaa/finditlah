@@ -29,9 +29,8 @@ function MarqueeRow({ entries, kind, reverse }) {
     : entries;
   const cards = (/** @type {boolean} */ dup) =>
     base.map((x, i) => {
-      const Tag = x.example ? "div" : Link;
       return (
-      <Tag
+      <Link
         key={(dup ? "d" : "") + i + x.id}
         to={kind === "l" ? `/item/${x.id}` : `/thrift/${x.id}`}
         aria-hidden={dup || i >= entries.length || undefined}
@@ -51,7 +50,7 @@ function MarqueeRow({ entries, kind, reverse }) {
             {kind === "l" ? x.location_name : [x.location_name, conditionLabel(x.condition)].filter(Boolean).join(" · ")}
           </span>
         </span>
-      </Tag>
+      </Link>
       );
     });
   return (

@@ -54,9 +54,8 @@ export const shortDate = (d) => {
 /** @param {{ item: any }} props */
 export function ItemTile({ item }) {
   const found = item.type === "found";
-  const Wrap = item.example ? ExampleBox : Link;
   return (
-    <Wrap to={`/item/${item.id}`} className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:-translate-y-1 hover:shadow-xl hover:shadow-black/5">
+    <Link to={`/item/${item.id}`} className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:-translate-y-1 hover:shadow-xl hover:shadow-black/5">
       {item.example && <ExampleTag />}
       <ItemArt imageUrl={item.image_url} category={item.category} kind="l" alt={item.title} className="h-44 w-full" />
       <div className="flex flex-col gap-1.5 p-3.5">
@@ -66,16 +65,11 @@ export function ItemTile({ item }) {
           {[item.location_name, shortDate(item.date || item.created_date)].filter(Boolean).join(" · ")}
         </span>
       </div>
-    </Wrap>
+    </Link>
   );
 }
 
-/* ---------- Example posts: shown with a tag, not clickable ---------- */
-/** @param {{ to?: string, className?: string, children: any }} props */
-function ExampleBox({ to: _to, className, children }) {
-  return <div className={className} title="Example post">{children}</div>;
-}
-
+/* ---------- Example posts: shown with a tag ---------- */
 export function ExampleTag({ className }) {
   return (
     <span className={cn("absolute left-2.5 top-2.5 z-10 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-ink shadow-sm backdrop-blur", className)}>
@@ -87,9 +81,8 @@ export function ExampleTag({ className }) {
 /* ---------- Thrift tile ---------- */
 /** @param {{ listing: any }} props */
 export function ListingTile({ listing }) {
-  const Wrap = listing.example ? ExampleBox : Link;
   return (
-    <Wrap to={`/thrift/${listing.id}`} className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:-translate-y-1 hover:shadow-xl hover:shadow-black/5">
+    <Link to={`/thrift/${listing.id}`} className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:-translate-y-1 hover:shadow-xl hover:shadow-black/5">
       {listing.example && <ExampleTag />}
       <ItemArt imageUrl={listing.image_url} category={listing.category} kind="t" alt={listing.title} className="h-44 w-full" />
       <div className="flex flex-col gap-1.5 p-3.5">
@@ -104,7 +97,7 @@ export function ListingTile({ listing }) {
           {[listing.location_name, conditionLabel(listing.condition)].filter(Boolean).join(" · ")}
         </span>
       </div>
-    </Wrap>
+    </Link>
   );
 }
 

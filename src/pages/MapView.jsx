@@ -188,8 +188,8 @@ function MapCard({ item }) {
       <Pill tone={found ? "found" : "lost"} className="self-start">{found ? "Found" : "Lost"}</Pill>
       <b className="text-sm leading-snug text-ink">{item.title}</b>
       <span className="text-xs text-muted-foreground">{item.location_name}</span>
-      {!item.example && <span className="text-xs font-bold text-ink underline underline-offset-4">View post</span>}
+      <span className="text-xs font-bold text-ink underline underline-offset-4">View post</span>
     </span>
   );
-  return item.example ? body : <Link to={`/item/${item.id}`} className="block !text-ink no-underline">{body}</Link>;
+  return <Link to={`/item/${item.id}`} className="block !text-ink no-underline">{body}</Link>;
 }

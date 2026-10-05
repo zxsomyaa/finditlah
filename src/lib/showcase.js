@@ -150,3 +150,15 @@ export function withExamples(real, examples, min = 6) {
   if (real.length >= min) return real;
   return [...real, ...examples.slice(0, min - real.length)];
 }
+
+/** Look up an example Lost & Found post by id (for its detail page). @param {string} id */
+export function findExampleItem(id) {
+  const x = EXAMPLE_ITEMS.find((e) => e.id === id);
+  return x ? { ...x, status: "active" } : null;
+}
+
+/** Look up an example thrift listing by id (for its detail page). @param {string} id */
+export function findExampleListing(id) {
+  const x = EXAMPLE_LISTINGS.find((e) => e.id === id);
+  return x ? { ...x, status: "active", seller_name: "FindItLah" } : null;
+}
