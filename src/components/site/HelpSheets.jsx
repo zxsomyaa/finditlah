@@ -34,7 +34,7 @@ export default function HelpSheets() {
             <SheetHeader className="text-left">
               <SheetTitle className="text-3xl font-extrabold tracking-tight">How thrift works</SheetTitle>
               <SheetDescription className="text-base leading-relaxed">
-                Buy and sell preloved clothes and small items with people nearby. Everything happens in the app, from the first message to payment.
+                Buy and sell preloved clothes and small items with people nearby. Chat in the app, agree on a price, then meet up or arrange postage.
               </SheetDescription>
             </SheetHeader>
             <div>
@@ -50,7 +50,7 @@ export default function HelpSheets() {
             </div>
             <div className="flex flex-col gap-3">
               <Step icon={MessageCircle} tone="t" title="Chat in the app">Ask questions, see more photos and agree on a price. Your number stays private.</Step>
-              <Step icon={CreditCard} tone="t" title="Pay in the app">Pay securely by card. The seller is paid after you confirm you&apos;ve received the item.</Step>
+              <Step icon={CreditCard} tone="t" title="Agree on price and payment">Sort out the price and how to pay with the seller in chat. Only pay once you&apos;ve seen the item.</Step>
               <Step icon={Handshake} tone="t" title="Meet up or get it mailed">Pick a public spot like an MRT station, or ask the seller to post it to you.</Step>
             </div>
             <div className="rounded-2xl bg-thrift-soft p-4 text-sm leading-relaxed">
@@ -98,8 +98,8 @@ export default function HelpSheets() {
               <SheetDescription className="text-base">A few simple habits keep handovers and trades smooth.</SheetDescription>
             </SheetHeader>
             <div className="flex flex-col gap-3">
-              <Step icon={MessageCircle} tone="ok" title="Keep chats in the app">Your phone number and email stay hidden. Never pay outside FindItLah.</Step>
-              <Step icon={MapPin} tone="ok" title="Meet in public places">MRT station control rooms, mall counters and community centres work well.</Step>
+              <Step icon={MessageCircle} tone="ok" title="Keep chats in the app">Your phone number and email stay hidden. Only pay once you have the item in hand.</Step>
+              <Step icon={MapPin} tone="ok" title="Meet in public places">MRT stations work well.</Step>
               <Step icon={ShieldCheck} tone="ok" title="Check before you hand over">Ask the owner to describe something only they would know.</Step>
             </div>
             <div className="flex flex-wrap gap-2.5">

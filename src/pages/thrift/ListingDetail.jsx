@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import { Loader2, MessageCircle, CreditCard, Pencil, Trash2, CheckCircle2, ShieldCheck } from "lucide-react";
-import { getListing, listListings, startListingChat, startCheckout, updateListing, removeListing, formatPrice } from "@/lib/thrift";
+import { Loader2, MessageCircle, Pencil, Trash2, CheckCircle2, ShieldCheck } from "lucide-react";
+import { getListing, listListings, startListingChat, updateListing, removeListing, formatPrice } from "@/lib/thrift";
 import { thriftCategoryLabel, conditionLabel } from "@/lib/categories";
 import { useAuth } from "@/lib/AuthContext";
 import { usePageMode, useSite } from "@/lib/SiteContext";
 import { toast } from "@/components/ui/use-toast";
 import { findExampleListing } from "@/lib/showcase";
-import { cn } from "@/lib/utils";
 import { Container, ItemArt, Pill, ListingTile, shortDate } from "@/components/site/parts";
 import JoinGate, { HiddenText } from "@/components/site/JoinGate";
 
@@ -20,9 +19,7 @@ export default function ListingDetail() {
   const queryClient = useQueryClient();
   const { user, loading: authLoading } = useAuth();
   const { openHelp } = useSite();
-  const [delivery, setDelivery] = useState(/** @type {"meetup"|"mail"} */ ("meetup"));
   const [busy, setBusy] = useState("");
-  const [payError, setPayError] = useState("");
 
   const { data: listing, isLoading } = useQuery({ queryKey: ["thrift-listing", id], queryFn: () => (id.startsWith("example-") ? findExampleListing(id) : getListing(id)), enabled: !!id });
   const { data: all = [] } = useQuery({ queryKey: ["thrift-listings"], queryFn: () => listListings().catch(() => []) });
@@ -42,19 +39,6 @@ export default function ListingDetail() {
     } catch (err) {
       toast({ title: "Couldn't open the chat", description: err instanceof Error ? err.message : "" });
     } finally { setBusy(""); }
-  };
-
-  const pay = async () => {
-    if (!user) return needLogin();
-    setPayError("");
-    try {
-      setBusy("pay");
-      const url = await startCheckout(listing.id, delivery);
-      window.location.assign(url);
-    } catch (err) {
-      setPayError(err instanceof Error ? err.message : "Couldn't start the payment.");
-      setBusy("");
-    }
   };
 
   /** @param {"sold"|"active"} status */
@@ -168,32 +152,21 @@ export default function ListingDetail() {
             </div>
           ) : available ? (
             <>
-              <button onClick={chat} disabled={busy === "chat"} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-border bg-card font-bold transition hover:border-ink/40 disabled:opacity-60">
+              <button onClick={chat} disabled={busy === "chat"} className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-thrift font-bold text-white transition disabled:opacity-60">
                 {busy === "chat" ? <Loader2 size={17} className="animate-spin" /> : <MessageCircle size={17} />}
                 Chat with {listing.seller_name || "the seller"}
               </button>
 
-              <fieldset className="flex flex-col gap-2.5 rounded-[20px] border border-border p-5">
-                <legend className="px-1 text-lg font-bold">Get it</legend>
-                {[
-                  ["meetup", "Meet up", "At a public spot you agree on in chat."],
-                  ["mail", "Mail it to me", "Agree on postage with the seller in chat first."],
-                ].map(([v, t, d]) => (
-                  <label key={v} className={cn("flex cursor-pointer items-start gap-3 rounded-2xl border-[1.5px] p-3.5 transition", delivery === v ? "border-thrift bg-thrift-soft" : "border-border")}>
-                    <input type="radio" name="delivery" value={v} checked={delivery === v} onChange={() => setDelivery(/** @type {any} */ (v))} className="mt-1 h-[18px] w-[18px] accent-[#A8404F]" />
-                    <span><b>{t}</b><br /><span className="text-sm text-muted-foreground">{d}</span></span>
-                  </label>
-                ))}
-                <button onClick={pay} disabled={busy === "pay"} className="mt-1 inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-thrift font-bold text-white disabled:opacity-60">
-                  {busy === "pay" ? <Loader2 size={17} className="animate-spin" /> : <CreditCard size={17} />}
-                  Pay {formatPrice(listing.price)} in app
-                </button>
-                {payError && <p role="alert" className="text-sm text-destructive">{payError}</p>}
+<div className="flex flex-col gap-2.5 rounded-[20px] border border-border p-5">
+                <b className="text-lg">How to get it</b>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Chat with the seller to agree on the price, how to pay and the handover. Meet at a busy public spot like an MRT station, or ask them to post it to you.
+                </p>
                 <p className="flex items-start gap-2 text-[13px] leading-relaxed text-muted-foreground">
                   <ShieldCheck size={16} className="mt-0.5 shrink-0" />
-                  The seller is paid after you confirm you&apos;ve received the item.
+                  Only pay once you&apos;ve seen the item.
                 </p>
-              </fieldset>
+              </div>
             </>
           ) : (
             <p className="rounded-2xl bg-muted p-4 text-muted-foreground">This item is {listing.status === "sold" ? "sold" : "reserved for a buyer"}.</p>

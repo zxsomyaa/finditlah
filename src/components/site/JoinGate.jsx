@@ -9,7 +9,7 @@ const COPY = {
   },
   listing: {
     title: "Create a free account to see more and buy",
-    body: "Members can read the full description, see the seller, chat with them and pay safely in the app.",
+    body: "Members can read the full description, see the seller and chat with them to arrange it.",
   },
   post: {
     title: "Create a free account to post",
