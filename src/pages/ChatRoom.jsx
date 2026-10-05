@@ -42,15 +42,6 @@ export default function ChatRoom() {
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  /* ---------------- SAFETY ---------------- */
-  if (!conversationId) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-muted-foreground">
-        Invalid chat
-      </div>
-    );
-  }
-
   /* ---------------- INIT ---------------- */
   useEffect(() => {
     const init = async () => {
@@ -177,6 +168,14 @@ export default function ChatRoom() {
   };
 
   /* ---------------- UI ---------------- */
+  if (!conversationId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-muted-foreground">
+        Invalid chat
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -227,7 +226,7 @@ export default function ChatRoom() {
       </div>
 
       {/* INPUT (FIXED ABOVE NAVBAR) */}
-      <div className="fixed bottom-20 left-0 right-0 bg-background border-t border-border p-3 z-50">
+      <div className="fixed bottom-24 md:bottom-0 left-0 right-0 bg-background border-t border-border p-3 z-50">
         <div className="max-w-xl mx-auto flex items-center gap-2">
           <label className="w-11 h-11 rounded-xl bg-muted flex items-center justify-center cursor-pointer">
             {uploading ? (
