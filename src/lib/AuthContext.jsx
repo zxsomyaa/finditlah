@@ -61,26 +61,13 @@ export const AuthProvider = ({ children }) => {
     if (error) throw error
   }
 
-  /**
-   * Sign in with Google (Supabase OAuth). Needs the Google provider turned on in
-   * Supabase → Authentication → Providers. See SETUP.md.
-   * @param {string} [returnTo] path to come back to after signing in
-   */
-  const loginWithGoogle = async (returnTo = "/") => {
-    const path = returnTo.startsWith("/") ? returnTo : "/"
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}${path}` },
-    })
-    if (error) throw error
-  }
 
   const logout = async () => {
     await supabase.auth.signOut()
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, loginWithGoogle, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, signup, logout, loading }}>
       {children}
     </AuthContext.Provider>
   )

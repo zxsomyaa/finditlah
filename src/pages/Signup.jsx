@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams, Link, useLocation } from "react-router-do
 import { Eye, EyeOff, Loader2, Gift } from "lucide-react"
 import { supabase } from "@/lib/supabase-client"
 import { redeemReferral } from "@/lib/rewards"
-import AuthShell, { GoogleButton, OrDivider } from "@/components/site/AuthShell"
+import AuthShell from "@/components/site/AuthShell"
 import { inputClass } from "@/components/site/parts"
 
 export default function Signup() {
@@ -19,7 +19,7 @@ export default function Signup() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
-  // Remember the referral code so it still counts if they choose Google sign-in.
+  // Remember the referral code so it still counts after they confirm their email.
   if (referralCode) {
     try { localStorage.setItem("fil-ref", referralCode) } catch (_e) { /* ignore */ }
   }
@@ -76,9 +76,6 @@ export default function Signup() {
             <Gift size={16} className="shrink-0" /> You were invited by a friend. Sign up and they&apos;ll earn reward points!
           </p>
         )}
-
-        <GoogleButton label="Sign up with Google" returnTo={/** @type {any} */ (location.state)?.from || "/"} />
-        <OrDivider />
 
         <form onSubmit={handleSignup} className="flex flex-col gap-3.5">
           <label className="flex flex-col gap-1.5 text-sm font-bold">Username

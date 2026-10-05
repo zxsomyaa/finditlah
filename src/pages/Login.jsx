@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Link } from "react-router-dom"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { useAuth } from "@/lib/AuthContext"
 import { supabase } from "@/lib/supabase-client"
-import AuthShell, { GoogleButton, OrDivider } from "@/components/site/AuthShell"
+import AuthShell from "@/components/site/AuthShell"
 import { inputClass } from "@/components/site/parts"
 
 export default function Login() {
@@ -62,9 +62,6 @@ export default function Login() {
       <div className="flex flex-col gap-4">
         <h1 className="text-3xl font-extrabold tracking-tight">Welcome back</h1>
         <p className="-mt-2 text-muted-foreground">Log in to post, chat and buy.</p>
-
-        <GoogleButton returnTo={from} />
-        <OrDivider />
 
         <form onSubmit={handleLogin} className="flex flex-col gap-3.5">
           <label className="flex flex-col gap-1.5 text-sm font-bold">Email

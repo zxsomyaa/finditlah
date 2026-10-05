@@ -1,7 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { Lock, MessageCircle, PlusCircle, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { GoogleButton, OrDivider } from "./AuthShell";
 
 const COPY = {
   details: {
@@ -46,19 +45,16 @@ export default function JoinGate({ reason = "details", tone = "l", plain = false
         <h2 className="text-xl font-extrabold leading-snug tracking-tight">{title}</h2>
         <p className="text-[15px] leading-relaxed text-muted-foreground">{body}</p>
       </div>
-      <GoogleButton label="Sign up with Google" returnTo={from} />
-      <OrDivider text="or" />
       <Link
         to="/signup"
         state={{ from }}
         className={cn("flex h-12 items-center justify-center rounded-xl font-bold text-white", tone === "t" ? "bg-thrift" : "bg-ink")}
       >
-        Create an account with email
+        Create a free account
       </Link>
-      <p className="text-center text-sm text-muted-foreground">
-        Already a member?{" "}
-        <Link to="/login" state={{ from }} className="font-bold text-foreground underline underline-offset-4">Log in</Link>
-      </p>
+      <Link to="/login" state={{ from }} className="flex h-12 items-center justify-center rounded-xl border border-border bg-white font-bold">
+        I already have an account
+      </Link>
       <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
         <Sparkles size={13} /> Free, and you earn reward points as you go.
       </p>
