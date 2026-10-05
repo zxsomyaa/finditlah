@@ -121,3 +121,8 @@
   .fil-marquee,
   .fil-marquee-reverse { animation: none; }
 }
+
+/* Map popups use the site font and softer corners */
+.leaflet-container { font-family: inherit; }
+.leaflet-popup-content-wrapper { border-radius: 18px; box-shadow: 0 20px 44px -22px rgba(36, 33, 28, .45); }
+.leaflet-popup-content { margin: 12px; }
