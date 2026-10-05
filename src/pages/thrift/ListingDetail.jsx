@@ -7,6 +7,7 @@ import { thriftCategoryLabel, conditionLabel } from "@/lib/categories";
 import { useAuth } from "@/lib/AuthContext";
 import { usePageMode, useSite } from "@/lib/SiteContext";
 import { toast } from "@/components/ui/use-toast";
+import { findExampleListing } from "@/lib/showcase";
 import { cn } from "@/lib/utils";
 import { Container, ItemArt, Pill, ListingTile, shortDate } from "@/components/site/parts";
 import JoinGate, { HiddenText } from "@/components/site/JoinGate";
@@ -23,7 +24,7 @@ export default function ListingDetail() {
   const [busy, setBusy] = useState("");
   const [payError, setPayError] = useState("");
 
-  const { data: listing, isLoading } = useQuery({ queryKey: ["thrift-listing", id], queryFn: () => getListing(id), enabled: !!id });
+  const { data: listing, isLoading } = useQuery({ queryKey: ["thrift-listing", id], queryFn: () => (id.startsWith("example-") ? findExampleListing(id) : getListing(id)), enabled: !!id });
   const { data: all = [] } = useQuery({ queryKey: ["thrift-listings"], queryFn: () => listListings().catch(() => []) });
 
   const needLogin = () => navigate("/login", { state: { from: location.pathname } });
@@ -112,6 +113,7 @@ export default function ListingDetail() {
         <div className="flex min-w-0 flex-col gap-4">
           <div className="flex flex-wrap gap-2">
             <Pill tone="thrift">Thrift</Pill>
+            {listing.example && <Pill tone="neutral" dot={false}>Example</Pill>}
             {listing.condition && <Pill tone="ok" dot={false}>{conditionLabel(listing.condition)}</Pill>}
             {!available && <Pill tone="neutral" dot={false}>{listing.status === "sold" ? "Sold" : "Reserved"}</Pill>}
           </div>
@@ -143,7 +145,12 @@ export default function ListingDetail() {
             ))}
           </div>
 
-          {isOwner ? (
+          {listing.example ? (
+            <div className="flex flex-col gap-1.5 rounded-[20px] border border-dashed border-border p-5">
+              <b className="text-lg">This is an example post</b>
+              <p className="text-sm leading-relaxed text-muted-foreground">It shows how thrift listings on FindItLah look. Real listings will appear here as people post them.</p>
+            </div>
+          ) : isOwner ? (
             <div className="flex flex-col gap-3 rounded-[20px] border border-border p-5">
               <b className="text-lg">This is your listing</b>
               <div className="flex flex-wrap gap-2.5">

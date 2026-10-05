@@ -10,6 +10,7 @@ import { useAuth } from "@/lib/AuthContext";
 import { usePageMode, useSite } from "@/lib/SiteContext";
 import { labelFor } from "@/lib/categories";
 import { toast } from "@/components/ui/use-toast";
+import { findExampleItem } from "@/lib/showcase";
 import { Container, ItemArt, Pill, ItemTile, shortDate } from "@/components/site/parts";
 import JoinGate, { HiddenText } from "@/components/site/JoinGate";
 
@@ -38,7 +39,7 @@ export default function ItemDetail() {
 
   const { data: item, isLoading } = useQuery({
     queryKey: ["item", id],
-    queryFn: () => db.entities.Item.getById(id),
+    queryFn: () => (id.startsWith("example-") ? findExampleItem(id) : db.entities.Item.getById(id)),
     enabled: !!id,
   });
   const { data: allItems = [] } = useQuery({
@@ -144,6 +145,7 @@ export default function ItemDetail() {
         <div className="flex min-w-0 flex-col gap-4">
           <div className="flex flex-wrap gap-2">
             <Pill tone={found ? "found" : "lost"}>{found ? "Found" : "Lost"}</Pill>
+            {item.example && <Pill tone="neutral" dot={false}>Example</Pill>}
             {resolved ? <Pill tone="ok">Resolved</Pill> : <Pill tone="neutral" dot={false}>{found ? "Waiting for the owner" : "Owner still searching"}</Pill>}
           </div>
           <h1 className="text-[clamp(28px,3.4vw,40px)] font-extrabold leading-[1.08] tracking-tight">{item.title}</h1>
@@ -171,7 +173,12 @@ export default function ItemDetail() {
             ))}
           </div>
 
-          {isOwner ? (
+          {item.example ? (
+            <div className="flex flex-col gap-1.5 rounded-[20px] border border-dashed border-border p-5">
+              <b className="text-lg">This is an example post</b>
+              <p className="text-sm leading-relaxed text-muted-foreground">It shows how lost & found posts on FindItLah look. Real posts will appear here as people post them.</p>
+            </div>
+          ) : isOwner ? (
             <div className="flex flex-col gap-3 rounded-[20px] border border-border p-5">
               <b className="text-lg">This is your post</b>
               <div className="flex flex-wrap gap-2.5">
