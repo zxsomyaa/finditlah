@@ -30,7 +30,7 @@ export default function AuthShell({ children }) {
               </div>
             ))}
           </div>
-          <p className="text-sm">You can browse without an account. Sign in to post, chat or buy.</p>
+          <p className="text-sm">Browse freely. Create a free account to see full posts, post, chat or buy.</p>
         </div>
         <div className="p-6 sm:p-11">{children}</div>
       </div>

@@ -9,6 +9,7 @@ import { usePageMode, useSite } from "@/lib/SiteContext";
 import { toast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { Container, ItemArt, Pill, ListingTile, shortDate } from "@/components/site/parts";
+import JoinGate, { HiddenText } from "@/components/site/JoinGate";
 
 export default function ListingDetail() {
   usePageMode("t");
@@ -16,7 +17,7 @@ export default function ListingDetail() {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { openHelp } = useSite();
   const [delivery, setDelivery] = useState(/** @type {"meetup"|"mail"} */ ("meetup"));
   const [busy, setBusy] = useState("");
@@ -80,7 +81,7 @@ export default function ListingDetail() {
     }
   };
 
-  if (isLoading) return <div className="flex min-h-[50vh] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
+  if (isLoading || authLoading) return <div className="flex min-h-[50vh] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
   if (!listing || listing.status === "removed") {
     return (
       <Container className="flex min-h-[50vh] flex-col items-center justify-center gap-4 text-center">
@@ -118,6 +119,14 @@ export default function ListingDetail() {
             {listing.title}{listing.size ? `, ${listing.size}` : ""}
           </h1>
           <div className="text-[40px] font-extrabold leading-none tracking-tight">{formatPrice(listing.price)}</div>
+          {!user ? (
+            <>
+              <p className="text-[15px] text-muted-foreground">Area: <b className="text-foreground">{listing.location_name || "Singapore"}</b></p>
+              <HiddenText />
+              {available ? <JoinGate reason="listing" tone="t" /> : <p className="rounded-2xl bg-muted p-4 text-muted-foreground">This item is {listing.status === "sold" ? "sold" : "reserved for a buyer"}.</p>}
+            </>
+          ) : (
+          <>
           {listing.description && <p className="whitespace-pre-line leading-relaxed text-muted-foreground">{listing.description}</p>}
 
           <div className="grid grid-cols-2 gap-2.5">
@@ -178,10 +187,11 @@ export default function ListingDetail() {
                   The seller is paid after you confirm you&apos;ve received the item.
                 </p>
               </fieldset>
-              {!user && <p className="-mt-2 text-xs text-muted-foreground">You&apos;ll be asked to log in first.</p>}
             </>
           ) : (
             <p className="rounded-2xl bg-muted p-4 text-muted-foreground">This item is {listing.status === "sold" ? "sold" : "reserved for a buyer"}.</p>
+          )}
+          </>
           )}
 
           <p className="text-sm text-muted-foreground">

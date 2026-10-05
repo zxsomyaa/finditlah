@@ -11,6 +11,7 @@ import { usePageMode, useSite } from "@/lib/SiteContext";
 import { labelFor } from "@/lib/categories";
 import { toast } from "@/components/ui/use-toast";
 import { Container, ItemArt, Pill, ItemTile, shortDate } from "@/components/site/parts";
+import JoinGate, { HiddenText } from "@/components/site/JoinGate";
 
 /* Simple text/category/location similarity used to suggest possible matches. */
 function calculateMatchScore(a, b) {
@@ -31,7 +32,7 @@ export default function ItemDetail() {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { openHelp } = useSite();
   const [busy, setBusy] = useState("");
 
@@ -107,7 +108,7 @@ export default function ItemDetail() {
     } finally { setBusy(""); }
   };
 
-  if (isLoading) {
+  if (isLoading || authLoading) {
     return <div className="flex min-h-[50vh] items-center justify-center"><Loader2 className="h-6 w-6 animate-spin" /></div>;
   }
   if (!item) {
@@ -146,6 +147,14 @@ export default function ItemDetail() {
             {resolved ? <Pill tone="ok">Resolved</Pill> : <Pill tone="neutral" dot={false}>{found ? "Waiting for the owner" : "Owner still searching"}</Pill>}
           </div>
           <h1 className="text-[clamp(28px,3.4vw,40px)] font-extrabold leading-[1.08] tracking-tight">{item.title}</h1>
+          {!user ? (
+            <>
+              <p className="text-[15px] text-muted-foreground">{found ? "Found at" : "Last seen at"} <b className="text-foreground">{item.location_name || "Singapore"}</b></p>
+              <HiddenText />
+              <JoinGate reason="details" />
+            </>
+          ) : (
+          <>
           {item.description && <p className="leading-relaxed text-muted-foreground">{item.description}</p>}
 
           <div className="grid grid-cols-2 gap-2.5">
@@ -189,8 +198,9 @@ export default function ItemDetail() {
                 {busy === "chat" ? <Loader2 size={17} className="animate-spin" /> : <MessageCircle size={17} />}
                 {found ? "Message the finder" : "Message the owner"}
               </button>
-              {!user && <p className="text-xs text-muted-foreground">You&apos;ll be asked to log in first.</p>}
             </div>
+          )}
+          </>
           )}
           <p className="text-sm text-muted-foreground">
             <button onClick={() => openHelp("safety")} className="font-bold text-foreground underline underline-offset-4">Safety tips</button> for handovers.
